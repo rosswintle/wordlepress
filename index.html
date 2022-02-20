@@ -11,9 +11,13 @@
             display: flex;
             justify-content: center;
             padding-top: 40px;
+            font-family: sans-serif;
         }
         #app {
             max-width: 500px;
+        }
+        p {
+            line-height: 1.3;
         }
         .guess-box {
             display: inline-block;
@@ -40,6 +44,10 @@
 
 <body>
     <div x-data id="app">
+        <h1>WordlePress</h1>
+        <p>Stupid prototype: This is a Wordle-type game.<br>
+            You have to guess a WordPress core (PHP) function name that has 4 parts.<br>
+        e.g. <code>wp_get_attachment_image</code></p>
     <div class="guesses">
         <template x-for="guess in $store.state.guesses">
             <div class="guess">
