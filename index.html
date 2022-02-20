@@ -45,6 +45,11 @@
             width: 100px;
             margin-top: 5px;
         }
+        .sponsor {
+            margin-top: 40px;
+            font-size: 0.9rem;
+            font-style: italic;
+        }
     </style>
 </head>
 
@@ -54,7 +59,7 @@
         <p>Stupid <em>very early</em> prototype: This is a Wordle-type game. It gives you a new random puzzle on page reload.</p>
         <p>You have to guess a WordPress core (PHP) function name that has 4 parts.<br>
         e.g. <code>wp_get_attachment_image</code></br>
-        <p>The score logic isn't QUITE right yet. And I think it's just too darn hard. But have a go and let me know what you think.</p>
+        <p>The score logic isn't QUITE right yet. And I think it's just too darn hard. But have a go and <a href="https://twitter.com/magicroundabout">let me know what you think</a>.</p>
 
         <div class="guesses">
         <template x-for="guess in $store.state.guesses">
@@ -74,6 +79,9 @@
         <code>_</code> <input id="part3" type="text" value="image" name="part3" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
         <button @click.prevent="processGuess">Guess</button>
     </form>
+
+    <div class="sponsor">
+        If you like this, I also made <a href="https://turbo-admin.com">a browser extension</a> you might like!
     </div>
     <script src="https://unpkg.com/alpinejs" defer></script>
     <script src="funcs.js"></script>
