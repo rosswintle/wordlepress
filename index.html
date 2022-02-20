@@ -62,10 +62,10 @@
         </template>
     </div>
     <form action="/">
-        <input id="part0" type="text" name="part0">
-        <input id="part1" type="text" name="part1">
-        <input id="part2" type="text" name="part2">
-        <input id="part3" type="text" name="part3">
+        <input id="part0" type="text" name="part0" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+        <code>_</code> <input id="part1" type="text" name="part1" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+        <code>_</code> <input id="part2" type="text" name="part2" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+        <code>_</code> <input id="part3" type="text" name="part3" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
         <button @click.prevent="processGuess">Guess</button>
     </form>
     </div>
@@ -83,10 +83,11 @@
             thisGuess = [0, 0, 0, 0];
             thisGuessedFunc = '';
             for (let i = 0; i < 4; i++) {
-                if ( (Alpine.store('state').word).split('_').includes( document.getElementById(`part${i}`).value ) ) {
+                const guessText = document.getElementById(`part${i}`).value.toLowerCase();
+                if ( (Alpine.store('state').word).split('_').includes( guessText ) ) {
                     thisGuess[i] = 1;
                 }
-                if (document.getElementById(`part${i}`).value === (Alpine.store('state').word).split('_')[i]) {
+                if (guessText === (Alpine.store('state').word).split('_')[i]) {
                     thisGuess[i] = 2;
                 }
                 thisGuessedFunc += document.getElementById(`part${i}`).value + '_';
