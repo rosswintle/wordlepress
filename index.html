@@ -45,10 +45,12 @@
 <body>
     <div x-data id="app">
         <h1>WordlePress</h1>
-        <p>Stupid prototype: This is a Wordle-type game.<br>
-            You have to guess a WordPress core (PHP) function name that has 4 parts.<br>
-        e.g. <code>wp_get_attachment_image</code></p>
-    <div class="guesses">
+        <p>Stupid <em>very early</em> prototype: This is a Wordle-type game. It gives you a new random puzzle on page reload.</p>
+        <p>You have to guess a WordPress core (PHP) function name that has 4 parts.<br>
+        e.g. <code>wp_get_attachment_image</code></br>
+        <p>The score logic isn't QUITE right yet. And I think it's just too darn hard. But have a go and let me know what you think.</p>
+
+        <div class="guesses">
         <template x-for="guess in $store.state.guesses">
             <div class="guess">
                 <span :class="{ 'guess-box': true, 'orange': guess[0] === 1, 'green': guess[0] === 2 }"></span>
