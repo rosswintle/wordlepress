@@ -38,6 +38,12 @@
         }
         input {
             width: 100px;
+            margin-bottom: 5px;
+        }
+        button {
+            display: block;
+            width: 100px;
+            margin-top: 5px;
         }
     </style>
 </head>
@@ -62,10 +68,10 @@
         </template>
     </div>
     <form action="/">
-        <input id="part0" type="text" name="part0" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-        <code>_</code> <input id="part1" type="text" name="part1" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-        <code>_</code> <input id="part2" type="text" name="part2" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-        <code>_</code> <input id="part3" type="text" name="part3" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+        <input id="part0" type="text" name="part0" value="wp" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+        <code>_</code> <input id="part1" type="text" value="get" name="part1" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+        <code>_</code> <input id="part2" type="text" value="attachment" name="part2" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+        <code>_</code> <input id="part3" type="text" value="image" name="part3" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
         <button @click.prevent="processGuess">Guess</button>
     </form>
     </div>
