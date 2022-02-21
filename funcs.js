@@ -1,4 +1,4 @@
-    const words = [
+    const funcs = [
         'wp_ajax_nopriv_heartbeat',
         'wp_ajax_fetch_list',
         'wp_ajax_imgedit_preview',

@@ -79,6 +79,7 @@
         <code>_</code> <input id="part2" type="text" value="attachment" name="part2" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
         <code>_</code> <input id="part3" type="text" value="image" name="part3" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
         <button @click.prevent="processGuess">Guess</button>
+        <button @click.prevent="suggestGuess">Suggest</button>
     </form>
 
     <div class="sponsor">
@@ -89,11 +90,12 @@
     <!-- / Fathom -->
     <script src="https://unpkg.com/alpinejs" defer></script>
     <script src="funcs.js"></script>
+    <script src="words.js"></script>
     <script>
         document.addEventListener('alpine:init', () => {
             Alpine.store('state', {
                 guesses: [],
-                word: words[Math.floor(Math.random()*words.length)]
+                func: funcs[Math.floor(Math.random()*funcs.length)]
             });
         });
 
@@ -101,11 +103,11 @@
             thisGuess = [0, 0, 0, 0];
             thisGuessedFunc = '';
             for (let i = 0; i < 4; i++) {
-                const guessText = document.getElementById(`part${i}`).value.toLowerCase();
-                if ( (Alpine.store('state').word).split('_').includes( guessText ) ) {
+                let guessText = document.getElementById(`part${i}`).value.toLowerCase();
+                if ( (Alpine.store('state').func).split('_').includes( guessText ) ) {
                     thisGuess[i] = 1;
                 }
-                if (guessText === (Alpine.store('state').word).split('_')[i]) {
+                if (guessText === (Alpine.store('state').func).split('_')[i]) {
                     thisGuess[i] = 2;
                 }
                 thisGuessedFunc += document.getElementById(`part${i}`).value + '_';
@@ -114,8 +116,12 @@
             Alpine.store('state').guesses.push(thisGuess);
         }
 
-        const word = words[1];
-        const parts = word.split('_');
+        function suggestGuess() {
+            for (let i = 0; i < 4; i++) {
+                let guessInput = document.getElementById(`part${i}`);
+                guessInput.value = words[Math.floor(Math.random()*words.length)];
+            }
+        }
 
     </script>
 </body>
