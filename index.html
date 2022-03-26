@@ -149,8 +149,8 @@
                         }
                         thisGuess.func = thisGuessedFunc.substring(0, thisGuessedFunc.length-1);
                         this.guesses.push(thisGuess);
-                        // Focus the first input
-                        document.getElementById(`part0`).focus();
+                        // Focus/select the first input
+                        document.getElementById(`part0`).select();
                     },
 
                     suggestGuess() {
