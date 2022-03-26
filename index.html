@@ -55,32 +55,36 @@
 </head>
 
 <body>
-    <div x-data id="app">
+    <div x-data="game" id="app">
         <h1>WordlePress</h1>
         <p>Stupid <em>very early</em> prototype: This is a Wordle-type game. It gives you a new random puzzle on page reload.</p>
-        <p>You have to guess a WordPress core (PHP) function name that has 4 parts.<br>
-        e.g. <code>wp_get_attachment_image</code></br>
+        <p>You have to guess a WordPress core (PHP) function name that has 4 parts. e.g. <code>wp_get_attachment_image</code></br>
         <p>The score logic isn't QUITE right yet. And I think it's just too darn hard. But have a go and <a href="https://twitter.com/magicroundabout">let me know what you think</a>.</p>
 
         <div class="guesses">
-        <template x-for="guess in $store.state.guesses">
+        <template x-for="guess in guesses">
             <div class="guess">
-                <span :class="{ 'guess-box': true, 'orange': guess[0] === 1, 'green': guess[0] === 2 }"></span>
-                <span :class="{ 'guess-box': true, 'orange': guess[1] === 1, 'green': guess[1] === 2 }"></span>
-                <span :class="{ 'guess-box': true, 'orange': guess[2] === 1, 'green': guess[2] === 2 }"></span>
-                <span :class="{ 'guess-box': true, 'orange': guess[3] === 1, 'green': guess[3] === 2 }"></span>
-                <span x-text="guess[4]"></span>
+                <span :class="{ 'guess-box': true, 'orange': guess.tiles[0].state === 1, 'green': guess.tiles[0].state === 2 }"></span>
+                <span :class="{ 'guess-box': true, 'orange': guess.tiles[1].state === 1, 'green': guess.tiles[1].state === 2 }"></span>
+                <span :class="{ 'guess-box': true, 'orange': guess.tiles[2].state === 1, 'green': guess.tiles[2].state === 2 }"></span>
+                <span :class="{ 'guess-box': true, 'orange': guess.tiles[3].state === 1, 'green': guess.tiles[3].state === 2 }"></span>
+                <span x-text="guess.func"></span>
             </div>
         </template>
     </div>
-    <form action="/">
+    <form action="/" x-show="! finished">
         <input id="part0" type="text" name="part0" value="wp" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
         <code>_</code> <input id="part1" type="text" value="get" name="part1" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
         <code>_</code> <input id="part2" type="text" value="attachment" name="part2" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
         <code>_</code> <input id="part3" type="text" value="image" name="part3" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
         <button @click.prevent="processGuess">Guess</button>
         <button @click.prevent="suggestGuess">Suggest</button>
+        <button @click.prevent="giveUp">Give Up</button>
     </form>
+
+    <div id="answer" x-show="finished">
+        It was: <span x-text="func"></span> (<a :href="'https://developer.wordpress.org/reference/functions/' + func">View docs</a>)
+    </div>
 
     <div class="sponsor">
         If you like this, I also made <a href="https://turbo-admin.com">a browser extension</a> you might like!
@@ -92,37 +96,85 @@
     <script src="funcs.js"></script>
     <script src="words.js"></script>
     <script>
+        class Tile {
+            constructor(word, state) {
+                this.word = word;
+                this.state = state;
+            }
+        }
+
+        class Guess {
+            constructor(func = '') {
+                this.func = func;
+                this.tiles = [];
+            }
+        }
+
         document.addEventListener('alpine:init', () => {
-            Alpine.store('state', {
-                guesses: [],
-                func: funcs[Math.floor(Math.random()*funcs.length)]
+            Alpine.data('game', () => {
+                return {
+
+                    guesses: [],
+
+                    correctWords: ['', '', '', ''],
+
+                    func: funcs[Math.floor(Math.random()*funcs.length)],
+
+                    finished: false,
+
+                    processGuess(e) {
+                        thisGuess = new Guess();
+                        thisGuessedFunc = '';
+
+                        for (let i = 0; i < 4; i++) {
+                            let guessText = document.getElementById(`part${i}`).value.toLowerCase();
+
+                            // Remove guessed words from the suggestion list
+                            this.removeSuggestion(guessText);
+
+                            if (guessText === (this.func).split('_')[i]) {
+                                thisGuess.tiles[i] = new Tile(guessText, 2);
+                                this.correctWords[i] = guessText;
+                            } else if ( (this.func).split('_').includes( guessText ) ) {
+                                thisGuess.tiles[i] = new Tile(guessText, 1);
+                            } else {
+                                thisGuess.tiles[i] = new Tile(guessText, 0);
+                            }
+                            thisGuessedFunc += document.getElementById(`part${i}`).value + '_';
+                        }
+                        thisGuess.func = thisGuessedFunc.substring(0, thisGuessedFunc.length-1);
+                        this.guesses.push(thisGuess);
+                        // Focus the first input
+                        document.getElementById(`part0`).focus();
+                    },
+
+                    suggestGuess() {
+                        for (let i = 0; i < 4; i++) {
+                            let guessInput = document.getElementById(`part${i}`);
+
+                            if (this.correctWords[i] !== '') {
+                                guessInput.value = this.correctWords[i];
+                            } else {
+                                guessInput.value = this.getRandomSuggestion();
+                            }
+                        }
+                    },
+
+                    getRandomSuggestion() {
+                        return (words.length > 0) ? words[Math.floor(Math.random()*words.length)] : '';
+                    },
+
+                    removeSuggestion(word) {
+                        let wordIndex = words.indexOf(word);
+                        words.splice(wordIndex, 1);
+                    },
+
+                    giveUp() {
+                        this.finished = true;
+                    }
+                }
             });
         });
-
-        function processGuess(e) {
-            thisGuess = [0, 0, 0, 0];
-            thisGuessedFunc = '';
-            for (let i = 0; i < 4; i++) {
-                let guessText = document.getElementById(`part${i}`).value.toLowerCase();
-                if ( (Alpine.store('state').func).split('_').includes( guessText ) ) {
-                    thisGuess[i] = 1;
-                }
-                if (guessText === (Alpine.store('state').func).split('_')[i]) {
-                    thisGuess[i] = 2;
-                }
-                thisGuessedFunc += document.getElementById(`part${i}`).value + '_';
-            }
-            thisGuess[4] = thisGuessedFunc.substring(0, thisGuessedFunc.length-1);
-            Alpine.store('state').guesses.push(thisGuess);
-        }
-
-        function suggestGuess() {
-            for (let i = 0; i < 4; i++) {
-                let guessInput = document.getElementById(`part${i}`);
-                guessInput.value = words[Math.floor(Math.random()*words.length)];
-            }
-        }
-
     </script>
 </body>
 
