@@ -126,16 +126,18 @@
                         thisGuess = new Guess();
                         thisGuessedFunc = '';
 
+                        funcLower = this.func.toLowerCase();
+
                         for (let i = 0; i < 4; i++) {
                             let guessText = document.getElementById(`part${i}`).value.toLowerCase();
 
                             // Remove guessed words from the suggestion list
                             this.removeSuggestion(guessText);
 
-                            if (guessText === (this.func).split('_')[i]) {
+                            if (guessText === (funcLower).split('_')[i]) {
                                 thisGuess.tiles[i] = new Tile(guessText, 2);
                                 this.correctWords[i] = guessText;
-                            } else if ( (this.func).split('_').includes( guessText ) ) {
+                            } else if ( (funcLower).split('_').includes( guessText ) ) {
                                 thisGuess.tiles[i] = new Tile(guessText, 1);
                             } else {
                                 thisGuess.tiles[i] = new Tile(guessText, 0);

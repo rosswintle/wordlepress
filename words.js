@@ -3,8 +3,6 @@ const words = [
 '230',
 '404',
 '430',
-'ID',
-'IP',
 'action',
 'active',
 'activity',
