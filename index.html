@@ -132,25 +132,28 @@
                         funcLower = this.func.toLowerCase();
 
                         for (let i = 0; i < 4; i++) {
-                            let guessText = document.getElementById(`part${i}`).value.toLowerCase();
+                            elem = document.getElementById(`part${i}`);
+                            let guessText = elem.value.toLowerCase();
+                            let guessTextLower = guessText.toLowerCase();
+                            elem.value = '';
 
                             // Remove guessed words from the suggestion list
                             this.removeSuggestion(guessText);
 
-                            if (guessText === (funcLower).split('_')[i]) {
-                                thisGuess.tiles[i] = new Tile(guessText, 2);
-                                this.correctWords[i] = guessText;
-                            } else if ( (funcLower).split('_').includes( guessText ) ) {
-                                thisGuess.tiles[i] = new Tile(guessText, 1);
+                            if (guessTextLower === (funcLower).split('_')[i]) {
+                                thisGuess.tiles[i] = new Tile(guessTextLower, 2);
+                                this.correctWords[i] = guessTextLower;
+                            } else if ( (funcLower).split('_').includes( guessTextLower ) ) {
+                                thisGuess.tiles[i] = new Tile(guessTextLower, 1);
                             } else {
-                                thisGuess.tiles[i] = new Tile(guessText, 0);
+                                thisGuess.tiles[i] = new Tile(guessTextLower, 0);
                             }
-                            thisGuessedFunc += document.getElementById(`part${i}`).value + '_';
+                            thisGuessedFunc += guessText + '_';
                         }
                         thisGuess.func = thisGuessedFunc.substring(0, thisGuessedFunc.length-1);
                         this.guesses.push(thisGuess);
                         // Focus/select the first input
-                        document.getElementById(`part0`).select();
+                        document.getElementById(`part0`).focus();
                     },
 
                     suggestGuess() {
