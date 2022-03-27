@@ -16,22 +16,47 @@
         #app {
             max-width: 500px;
         }
+        [x-cloak] {
+            display: none !important;
+        }
         p {
             line-height: 1.3;
         }
+        .guess {
+            display: flex;
+            width: 100%;
+            align-items: center;
+            margin-bottom: 4px;
+        }
         .guess-box {
             display: inline-block;
-            width: 20px;
-            height: 20px;
+            width: 25px;
+            height: 25px;
             border: 1px solid white;
-            margin-right: 10px;
+            margin-right: 4px;
+            background-color: #FFF;
+            transition: background-color 0.3s;
+        }
+        .guess-box:nth-child(2) {
+            transition: background-color 0.3s 0.3s;
+        }
+        .guess-box:nth-child(3) {
+            transition: background-color 0.3s 0.6s;
+        }
+        .guess-box:nth-child(4) {
+            transition: background-color 0.3s 0.9s;
+        }
+        .guess:not(.new) .guess-box {
             background-color: #999;
         }
-        .guess-box.orange {
+        .guess:not(.new) .guess-box.orange {
             background-color: orange;
         }
-        .guess-box.green {
+        .guess:not(.new) .guess-box.green {
             background-color: green;
+        }
+        .guessed-function {
+            margin-left: 10px;
         }
         form {
             margin-top: 20px;
@@ -40,11 +65,28 @@
             width: 100px;
             margin-bottom: 5px;
             font-size: 16px; /* Prevents zoom on iOS */
+            /* Fixed width font */
+            font-family: monospace;
+        }
+        #buttons {
+            display: flex;
+            flex-wrap: wrap;
+            margin-top: 10px;
         }
         button {
             display: block;
-            width: 100px;
+            width: 150px;
+            height: auto;
+            padding: 10px 0;
+            font-size: 18px;
             margin-top: 5px;
+            margin-right: 10px;
+            background-color: #7f7fde;
+            color: #FFF;
+            box-shadow: none;
+            border: 0 none;
+            text-transform: uppercase;
+            letter-spacing: 0.2;
         }
         #answer {
             margin-top: 12px;
@@ -66,12 +108,12 @@
 
         <div class="guesses">
         <template x-for="guess in guesses">
-            <div class="guess">
+            <div class="guess new">
                 <span :class="{ 'guess-box': true, 'orange': guess.tiles[0].state === 1, 'green': guess.tiles[0].state === 2 }"></span>
                 <span :class="{ 'guess-box': true, 'orange': guess.tiles[1].state === 1, 'green': guess.tiles[1].state === 2 }"></span>
                 <span :class="{ 'guess-box': true, 'orange': guess.tiles[2].state === 1, 'green': guess.tiles[2].state === 2 }"></span>
                 <span :class="{ 'guess-box': true, 'orange': guess.tiles[3].state === 1, 'green': guess.tiles[3].state === 2 }"></span>
-                <span x-text="guess.func"></span>
+                <span class="guessed-function" x-text="guess.func"></span>
             </div>
         </template>
     </div>
@@ -80,12 +122,14 @@
         <code>_</code> <input id="part1" type="text" value="get" name="part1" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
         <code>_</code> <input id="part2" type="text" value="attachment" name="part2" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
         <code>_</code> <input id="part3" type="text" value="image" name="part3" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-        <button @click.prevent="processGuess">Guess</button>
-        <button @click.prevent="suggestGuess">Suggest</button>
-        <button @click.prevent="giveUp">Give Up</button>
+        <div id="buttons">
+            <button class="guessButton" @click.prevent="processGuess">Guess</button>
+            <button class="suggestButton" @click.prevent="suggestGuess">Suggest</button>
+            <button class="giveUpButton" @click.prevent="giveUp">Give Up</button>
+        </div>
     </form>
 
-    <div id="answer" x-show="finished">
+    <div id="answer" x-show="finished" x-cloak>
         It was: <span x-text="func"></span> (<a target="_blank" :href="'https://developer.wordpress.org/reference/functions/' + func">View docs</a>)
     </div>
 
@@ -152,6 +196,9 @@
                         }
                         thisGuess.func = thisGuessedFunc.substring(0, thisGuessedFunc.length-1);
                         this.guesses.push(thisGuess);
+
+                        Alpine.nextTick(() => this.animateGuesses());
+
                         // Focus/select the first input
                         document.getElementById(`part0`).focus();
                     },
@@ -179,6 +226,10 @@
 
                     giveUp() {
                         this.finished = true;
+                    },
+
+                    animateGuesses(guesses) {
+                        document.querySelector('.guess.new').classList.remove('new');
                     }
                 }
             });
