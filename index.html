@@ -68,6 +68,19 @@
             /* Fixed width font */
             font-family: monospace;
         }
+        /* The order of these is important as a word may have multiple of these classes */
+        input.grey {
+            background-color: rgb(216, 216, 216);
+        }
+        input.red {
+            background-color: rgb(253, 155, 135);
+        }
+        input.orange {
+            background-color: rgb(255, 222, 122);
+        }
+        input.green {
+            background-color: rgb(162, 255, 187);
+        }
         #buttons {
             display: flex;
             flex-wrap: wrap;
@@ -118,16 +131,18 @@
         </template>
     </div>
     <form action="/" x-show="! finished">
-        <input id="part0" type="text" name="part0" value="wp" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-        <code>_</code> <input id="part1" type="text" value="get" name="part1" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-        <code>_</code> <input id="part2" type="text" value="attachment" name="part2" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-        <code>_</code> <input id="part3" type="text" value="image" name="part3" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+                       <input x-model="currentGuesses[0]" id="part0" type="text" name="part0" :key="part0" :class="{ 'green': inputIsGreen(0), orange: inputIsOrange(0), grey: inputIsGrey(0), red: inputIsRed(0)}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+        <code>_</code> <input x-model="currentGuesses[1]" id="part1" type="text" name="part1" :key="part1" :class="{ 'green': inputIsGreen(1), orange: inputIsOrange(1), grey: inputIsGrey(1), red: inputIsRed(1)}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+        <code>_</code> <input x-model="currentGuesses[2]" id="part2" type="text" name="part2" :key="part2" :class="{ 'green': inputIsGreen(2), orange: inputIsOrange(2), grey: inputIsGrey(2), red: inputIsRed(2)}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+        <code>_</code> <input x-model="currentGuesses[3]" id="part3" type="text" name="part3" :key="part3" :class="{ 'green': inputIsGreen(3), orange: inputIsOrange(3), grey: inputIsGrey(3), red: inputIsRed(3)}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
         <div id="buttons">
             <button class="guessButton" @click.prevent="processGuess">Guess</button>
             <button class="suggestButton" @click.prevent="suggestGuess">Suggest</button>
             <button class="giveUpButton" @click.prevent="giveUp">Give Up</button>
         </div>
     </form>
+
+    <p x-text="func"></p>
 
     <div id="answer" x-show="finished" x-cloak>
         It was: <span x-text="func"></span> (<a target="_blank" :href="'https://developer.wordpress.org/reference/functions/' + func">View docs</a>)
@@ -163,6 +178,10 @@
 
                     guesses: [],
 
+                    guessedWords: [],
+
+                    currentGuesses:[ 'wp', 'get','attachment','image' ],
+
                     correctWords: ['', '', '', ''],
 
                     func: funcs[Math.floor(Math.random()*funcs.length)],
@@ -179,10 +198,11 @@
                             elem = document.getElementById(`part${i}`);
                             let guessText = elem.value.toLowerCase();
                             let guessTextLower = guessText.toLowerCase();
-                            elem.value = '';
+                            // elem.value = '';
 
                             // Remove guessed words from the suggestion list
                             this.removeSuggestion(guessText);
+                            this.guessedWords.push(guessText);
 
                             if (guessTextLower === (funcLower).split('_')[i]) {
                                 thisGuess.tiles[i] = new Tile(guessTextLower, 2);
@@ -205,12 +225,10 @@
 
                     suggestGuess() {
                         for (let i = 0; i < 4; i++) {
-                            let guessInput = document.getElementById(`part${i}`);
-
                             if (this.correctWords[i] !== '') {
-                                guessInput.value = this.correctWords[i];
+                                this.currentGuesses[i] = this.correctWords[i];
                             } else {
-                                guessInput.value = this.getRandomSuggestion();
+                                this.currentGuesses[i] = this.getRandomSuggestion();
                             }
                         }
                     },
@@ -222,6 +240,19 @@
                     removeSuggestion(word) {
                         let wordIndex = words.indexOf(word);
                         words.splice(wordIndex, 1);
+                    },
+
+                    inputIsGreen(i) {
+                        return this.currentGuesses[i].length > 0 && this.correctWords[i] === this.currentGuesses[i]
+                    },
+                    inputIsOrange(i) {
+                        return this.currentGuesses[i].length > 0 && this.correctWords.includes(this.currentGuesses[i] );
+                    },
+                    inputIsRed(i) {
+                        return this.currentGuesses[i].length > 0 && this.guessedWords.includes(this.currentGuesses[i] );
+                    },
+                    inputIsGrey(i) {
+                        return ! words.includes(this.currentGuesses[i]);
                     },
 
                     giveUp() {
