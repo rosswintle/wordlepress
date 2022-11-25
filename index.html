@@ -100,6 +100,11 @@
             border: 0 none;
             text-transform: uppercase;
             letter-spacing: 0.2;
+            cursor: pointer;
+        }
+        button:disabled {
+            background-color: #999;
+            cursor: not-allowed;
         }
         #answer {
             margin-top: 12px;
@@ -136,13 +141,11 @@
         <code>_</code> <input x-model="currentGuesses[2]" id="part2" type="text" name="part2" :key="part2" :class="{ 'green': inputIsGreen(2), orange: inputIsOrange(2), grey: inputIsGrey(2), red: inputIsRed(2)}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
         <code>_</code> <input x-model="currentGuesses[3]" id="part3" type="text" name="part3" :key="part3" :class="{ 'green': inputIsGreen(3), orange: inputIsOrange(3), grey: inputIsGrey(3), red: inputIsRed(3)}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
         <div id="buttons">
-            <button class="guessButton" @click.prevent="processGuess">Guess</button>
+            <button class="guessButton" x-bind:disabled="guessInvalid" @click.prevent="processGuess">Guess</button>
             <button class="suggestButton" @click.prevent="suggestGuess">Suggest</button>
             <button class="giveUpButton" @click.prevent="giveUp">Give Up</button>
         </div>
     </form>
-
-    <p x-text="func"></p>
 
     <div id="answer" x-show="finished" x-cloak>
         It was: <span x-text="func"></span> (<a target="_blank" :href="'https://developer.wordpress.org/reference/functions/' + func">View docs</a>)
@@ -180,35 +183,48 @@
 
                     guessedWords: [],
 
+                    orangeWords: [],
+
                     currentGuesses:[ 'wp', 'get','attachment','image' ],
 
                     correctWords: ['', '', '', ''],
 
                     func: funcs[Math.floor(Math.random()*funcs.length)],
 
+                    funcPartsLower: [],
+
                     finished: false,
 
+                    init() {
+                        this.funcPartsLower = this.func.toLowerCase().split('_');
+                    },
+
                     processGuess(e) {
+                        if ( ! this.allGuessesValid() ) {
+                            return;
+                        }
+
                         thisGuess = new Guess();
                         thisGuessedFunc = '';
-
-                        funcLower = this.func.toLowerCase();
 
                         for (let i = 0; i < 4; i++) {
                             elem = document.getElementById(`part${i}`);
                             let guessText = elem.value.toLowerCase();
                             let guessTextLower = guessText.toLowerCase();
-                            // elem.value = '';
+
+                            // Clear the guess
+                            this.currentGuesses[i] = '';
 
                             // Remove guessed words from the suggestion list
                             this.removeSuggestion(guessText);
                             this.guessedWords.push(guessText);
 
-                            if (guessTextLower === (funcLower).split('_')[i]) {
+                            if (guessTextLower === this.funcPartsLower[i]) {
                                 thisGuess.tiles[i] = new Tile(guessTextLower, 2);
                                 this.correctWords[i] = guessTextLower;
-                            } else if ( (funcLower).split('_').includes( guessTextLower ) ) {
+                            } else if (this.funcPartsLower.includes(guessTextLower)) {
                                 thisGuess.tiles[i] = new Tile(guessTextLower, 1);
+                                this.orangeWords.push(guessTextLower);
                             } else {
                                 thisGuess.tiles[i] = new Tile(guessTextLower, 0);
                             }
@@ -242,17 +258,31 @@
                         words.splice(wordIndex, 1);
                     },
 
+                    guessInvalid() {
+                        return ! this.allGuessesValid();
+                    },
+
+                    allGuessesValid() {
+                        // Create array of numbers 1-4
+                        let numbers = Array.from(Array(4).keys());
+                        return numbers.every(this.guessIsValid.bind(this));
+                    },
+
+                    guessIsValid(guessIndex) {
+                        return this.guessedWords.includes(this.currentGuesses[guessIndex]) || words.includes(this.currentGuesses[guessIndex]);
+                    },
+
                     inputIsGreen(i) {
                         return this.currentGuesses[i].length > 0 && this.correctWords[i] === this.currentGuesses[i]
                     },
                     inputIsOrange(i) {
-                        return this.currentGuesses[i].length > 0 && this.correctWords.includes(this.currentGuesses[i] );
+                        return this.currentGuesses[i].length > 0 && this.orangeWords.includes(this.currentGuesses[i] );
                     },
                     inputIsRed(i) {
                         return this.currentGuesses[i].length > 0 && this.guessedWords.includes(this.currentGuesses[i] );
                     },
                     inputIsGrey(i) {
-                        return ! words.includes(this.currentGuesses[i]);
+                        return ! this.guessIsValid(i);
                     },
 
                     giveUp() {
