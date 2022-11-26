@@ -134,7 +134,10 @@
         <p>Guess a WordPress core (PHP) function name that has 4 parts. e.g. <code>wp_get_attachment_image</code> and learn!</br>
         <p>This game is unexpectedly VERY hard, but have a go and <a href="https://twitter.com/magicroundabout">let me know what you think</a>.</p>
 
-        <h2>Puzzle number <span x-text="dayNumber"></span></h2>
+        <button @click="changeMode('random')">Random</button>
+        <button @click="changeMode('daily')">Daily</button>
+
+        <h2 x-show="mode === 'daily'">Puzzle number <span x-text="dayNumber"></span></h2>
         <div class="guesses">
         <template x-for="guess in currentGame.guesses">
             <div class="guess new">
@@ -267,15 +270,30 @@
                             this.dailyGame = new DailyGameData(this.dayNumber);
                         }
 
-                        // Load the correct game into currentGame
+                        // Set the initial game mode
+                        this.initGameMode();
+
+                        this.$nextTick(() => {
+                            this.animateGuesses()
+                        });
+
+                    },
+
+                    changeMode(mode) {
+                        console.log('Changing mode to ' + mode);
+                        this.mode = mode;
+                        this.initGameMode();
+                        this.$nextTick(() => {
+                            this.animateGuesses()
+                        });
+                    },
+
+                    initGameMode() {
                         if (this.mode === 'daily') {
                             this.currentGame = this.dailyGame;
                         } else {
                             this.currentGame = this.randomGame;
                         }
-
-                        this.animateGuesses();
-
                     },
 
                     randomFunc() {
