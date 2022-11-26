@@ -205,8 +205,19 @@
 
                     finished: false,
 
+                    funcForTheDay: '',
+
+                    dayNumber: '',
+
                     init() {
                         this.funcPartsLower = this.func.toLowerCase().split('_');
+                        // Calculate how many days since 26th November 2022
+                        const today = new Date();
+                        const dayOne = new Date(2022, 10, 26);
+                        const diffTime = Math.abs(today - dayOne);
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                        this.dayNumber = diffDays % funcs.length;
+                        this.funcForTheDay = funcs[this.dayNumber - 1];
                     },
 
                     processGuess(e) {
