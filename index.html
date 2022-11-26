@@ -134,6 +134,7 @@
         <p>Guess a WordPress core (PHP) function name that has 4 parts. e.g. <code>wp_get_attachment_image</code> and learn!</br>
         <p>This game is unexpectedly VERY hard, but have a go and <a href="https://twitter.com/magicroundabout">let me know what you think</a>.</p>
 
+        <h2>Puzzle number <span x-text="dayNumber"></span></h2>
         <div class="guesses">
         <template x-for="guess in guesses">
             <div class="guess new">
@@ -150,6 +151,7 @@
         <code>_</code> <input x-model="currentGuesses[1]" id="part1" type="text" name="part1" :key="part1" @keydown.space.prevent="focusNextInput" :class="{ 'green': inputIsGreen(1), orange: inputIsOrange(1), grey: inputIsGrey(1), red: inputIsRed(1)}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
         <code>_</code> <input x-model="currentGuesses[2]" id="part2" type="text" name="part2" :key="part2" @keydown.space.prevent="focusNextInput" :class="{ 'green': inputIsGreen(2), orange: inputIsOrange(2), grey: inputIsGrey(2), red: inputIsRed(2)}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
         <code>_</code> <input x-model="currentGuesses[3]" id="part3" type="text" name="part3" :key="part3"                               :class="{ 'green': inputIsGreen(3), orange: inputIsOrange(3), grey: inputIsGrey(3), red: inputIsRed(3)}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+        <p>Guesses: <span x-text="guesses.length"></span></p>
         <div id="buttons">
             <button class="guessButton" x-bind:disabled="guessInvalid" @click.prevent="processGuess">Guess</button>
             <button class="suggestButton" @click.prevent="suggestGuess">Suggest</button>
