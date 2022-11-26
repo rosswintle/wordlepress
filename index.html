@@ -14,7 +14,7 @@
             font-family: sans-serif;
         }
         #app {
-            max-width: 500px;
+            max-width: 600px;
         }
         [x-cloak] {
             display: none !important;
@@ -30,8 +30,8 @@
         }
         .guess-box {
             display: inline-block;
-            width: 25px;
-            height: 25px;
+            width: 30px;
+            height: 30px;
             border: 1px solid white;
             margin-right: 4px;
             background-color: #FFF;
@@ -67,19 +67,30 @@
             font-size: 16px; /* Prevents zoom on iOS */
             /* Fixed width font */
             font-family: monospace;
+            padding: 6px 10px;
+            outline: none;
+            border: 1px solid black;
+            border-radius: 4px;
+            --glow-color: white;
+            -webkit-box-shadow: 0px 0px 5px 1px var(--glow-color);
+            -moz-box-shadow: 0px 0px 5px 1px var(--glow-color);
+            box-shadow: 0px 0px 5px 1px var(--glow-color);
         }
         /* The order of these is important as a word may have multiple of these classes */
         input.grey {
             background-color: rgb(216, 216, 216);
         }
         input.red {
-            background-color: rgb(253, 155, 135);
+            /* background-color: rgb(253, 155, 135); */
+            --glow-color: rgb(188, 31, 0);
         }
         input.orange {
-            background-color: rgb(255, 222, 122);
+            /* background-color: rgb(255, 222, 122); */
+            --glow-color: rgb(207, 128, 0);
         }
         input.green {
-            background-color: rgb(162, 255, 187);
+            /* background-color: rgb(162, 255, 187); */
+            --glow-color: rgb(2, 211, 58);
         }
         #buttons {
             display: flex;
@@ -120,9 +131,8 @@
 <body>
     <div x-data="game" id="app">
         <h1>WordlePress</h1>
-        <p>Stupid <em>very early</em> prototype: This is a Wordle-type game. It gives you a new random puzzle on page reload.</p>
-        <p>You have to guess a WordPress core (PHP) function name that has 4 parts. e.g. <code>wp_get_attachment_image</code></br>
-        <p>The score logic isn't QUITE right yet. And I think it's just too darn hard. But have a go and <a href="https://twitter.com/magicroundabout">let me know what you think</a>.</p>
+        <p>Guess a WordPress core (PHP) function name that has 4 parts. e.g. <code>wp_get_attachment_image</code> and learn!</br>
+        <p>This game is unexpectedly VERY hard, but have a go and <a href="https://twitter.com/magicroundabout">let me know what you think</a>.</p>
 
         <div class="guesses">
         <template x-for="guess in guesses">
@@ -136,10 +146,10 @@
         </template>
     </div>
     <form action="/" x-show="! finished">
-                       <input x-model="currentGuesses[0]" id="part0" type="text" name="part0" :key="part0" :class="{ 'green': inputIsGreen(0), orange: inputIsOrange(0), grey: inputIsGrey(0), red: inputIsRed(0)}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-        <code>_</code> <input x-model="currentGuesses[1]" id="part1" type="text" name="part1" :key="part1" :class="{ 'green': inputIsGreen(1), orange: inputIsOrange(1), grey: inputIsGrey(1), red: inputIsRed(1)}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-        <code>_</code> <input x-model="currentGuesses[2]" id="part2" type="text" name="part2" :key="part2" :class="{ 'green': inputIsGreen(2), orange: inputIsOrange(2), grey: inputIsGrey(2), red: inputIsRed(2)}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-        <code>_</code> <input x-model="currentGuesses[3]" id="part3" type="text" name="part3" :key="part3" :class="{ 'green': inputIsGreen(3), orange: inputIsOrange(3), grey: inputIsGrey(3), red: inputIsRed(3)}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+                       <input x-model="currentGuesses[0]" id="part0" type="text" name="part0" :key="part0" @keydown.space.prevent="focusNextInput" :class="{ 'green': inputIsGreen(0), orange: inputIsOrange(0), grey: inputIsGrey(0), red: inputIsRed(0)}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+        <code>_</code> <input x-model="currentGuesses[1]" id="part1" type="text" name="part1" :key="part1" @keydown.space.prevent="focusNextInput" :class="{ 'green': inputIsGreen(1), orange: inputIsOrange(1), grey: inputIsGrey(1), red: inputIsRed(1)}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+        <code>_</code> <input x-model="currentGuesses[2]" id="part2" type="text" name="part2" :key="part2" @keydown.space.prevent="focusNextInput" :class="{ 'green': inputIsGreen(2), orange: inputIsOrange(2), grey: inputIsGrey(2), red: inputIsRed(2)}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+        <code>_</code> <input x-model="currentGuesses[3]" id="part3" type="text" name="part3" :key="part3"                               :class="{ 'green': inputIsGreen(3), orange: inputIsOrange(3), grey: inputIsGrey(3), red: inputIsRed(3)}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
         <div id="buttons">
             <button class="guessButton" x-bind:disabled="guessInvalid" @click.prevent="processGuess">Guess</button>
             <button class="suggestButton" @click.prevent="suggestGuess">Suggest</button>
@@ -283,6 +293,10 @@
                     },
                     inputIsGrey(i) {
                         return ! this.guessIsValid(i);
+                    },
+
+                    focusNextInput(e) {
+                        e.target.nextElementSibling.nextElementSibling.focus();
                     },
 
                     giveUp() {
