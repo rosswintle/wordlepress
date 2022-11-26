@@ -199,7 +199,7 @@
 
                     correctWords: ['', '', '', ''],
 
-                    func: funcs[Math.floor(Math.random()*funcs.length)],
+                    func: '',
 
                     funcPartsLower: [],
 
@@ -210,14 +210,19 @@
                     dayNumber: '',
 
                     init() {
-                        this.funcPartsLower = this.func.toLowerCase().split('_');
                         // Calculate how many days since 26th November 2022
                         const today = new Date();
                         const dayOne = new Date(2022, 10, 26);
                         const diffTime = Math.abs(today - dayOne);
                         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                         this.dayNumber = diffDays % funcs.length;
-                        this.funcForTheDay = funcs[this.dayNumber - 1];
+                        this.funcForTheDay = atob(funcs[this.dayNumber - 1]);
+                        this.func = this.funcForTheDay;
+                        this.funcPartsLower = this.funcForTheDay.toLowerCase().split('_');
+                    },
+
+                    randomFunc() {
+                        return atob(funcs[Math.floor(Math.random()*funcs.length)]);
                     },
 
                     processGuess(e) {
