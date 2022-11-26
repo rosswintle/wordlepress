@@ -136,7 +136,7 @@
 
         <h2>Puzzle number <span x-text="dayNumber"></span></h2>
         <div class="guesses">
-        <template x-for="guess in guesses">
+        <template x-for="guess in currentGame.guesses">
             <div class="guess new">
                 <span :class="{ 'guess-box': true, 'orange': guess.tiles[0].state === 1, 'green': guess.tiles[0].state === 2 }"></span>
                 <span :class="{ 'guess-box': true, 'orange': guess.tiles[1].state === 1, 'green': guess.tiles[1].state === 2 }"></span>
@@ -146,12 +146,12 @@
             </div>
         </template>
     </div>
-    <form action="/" x-show="! finished">
-                       <input x-model="currentGuesses[0]" id="part0" type="text" name="part0" :key="part0" @keydown.space.prevent="focusNextInput" :class="{ 'green': inputIsGreen(0), orange: inputIsOrange(0), grey: inputIsGrey(0), red: inputIsRed(0)}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-        <code>_</code> <input x-model="currentGuesses[1]" id="part1" type="text" name="part1" :key="part1" @keydown.space.prevent="focusNextInput" :class="{ 'green': inputIsGreen(1), orange: inputIsOrange(1), grey: inputIsGrey(1), red: inputIsRed(1)}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-        <code>_</code> <input x-model="currentGuesses[2]" id="part2" type="text" name="part2" :key="part2" @keydown.space.prevent="focusNextInput" :class="{ 'green': inputIsGreen(2), orange: inputIsOrange(2), grey: inputIsGrey(2), red: inputIsRed(2)}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-        <code>_</code> <input x-model="currentGuesses[3]" id="part3" type="text" name="part3" :key="part3"                               :class="{ 'green': inputIsGreen(3), orange: inputIsOrange(3), grey: inputIsGrey(3), red: inputIsRed(3)}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-        <p>Guesses: <span x-text="guesses.length"></span></p>
+    <form action="/" x-show="! currentGame.finished">
+                       <input x-model="currentGame.currentGuesses[0]" id="part0" type="text" name="part0" :key="part0" @keydown.space.prevent="focusNextInput" :class="{ 'green': inputIsGreen(0), orange: inputIsOrange(0), grey: inputIsGrey(0), red: inputIsRed(0)}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+        <code>_</code> <input x-model="currentGame.currentGuesses[1]" id="part1" type="text" name="part1" :key="part1" @keydown.space.prevent="focusNextInput" :class="{ 'green': inputIsGreen(1), orange: inputIsOrange(1), grey: inputIsGrey(1), red: inputIsRed(1)}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+        <code>_</code> <input x-model="currentGame.currentGuesses[2]" id="part2" type="text" name="part2" :key="part2" @keydown.space.prevent="focusNextInput" :class="{ 'green': inputIsGreen(2), orange: inputIsOrange(2), grey: inputIsGrey(2), red: inputIsRed(2)}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+        <code>_</code> <input x-model="currentGame.currentGuesses[3]" id="part3" type="text" name="part3" :key="part3"                               :class="{ 'green': inputIsGreen(3), orange: inputIsOrange(3), grey: inputIsGrey(3), red: inputIsRed(3)}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+        <p>Guesses: <span x-text="currentGame.guesses.length"></span></p>
         <div id="buttons">
             <button class="guessButton" x-bind:disabled="guessInvalid" @click.prevent="processGuess">Guess</button>
             <button class="suggestButton" @click.prevent="suggestGuess">Suggest</button>
@@ -159,8 +159,8 @@
         </div>
     </form>
 
-    <div id="answer" x-show="finished" x-cloak>
-        It was: <span x-text="func"></span> (<a target="_blank" :href="'https://developer.wordpress.org/reference/functions/' + func">View docs</a>)
+    <div id="answer" x-show="currentGame.finished" x-cloak>
+        It was: <span x-text="currentGame.func"></span> (<a target="_blank" :href="'https://developer.wordpress.org/reference/functions/' + currentGame.func">View docs</a>)
     </div>
 
     <div class="sponsor">
@@ -169,7 +169,9 @@
     <!-- Fathom - beautiful, simple website analytics -->
     <script src="https://cdn.usefathom.com/script.js" data-site="RQQYYYJA" defer></script>
     <!-- / Fathom -->
-    <script src="https://unpkg.com/alpinejs" defer></script>
+    <!-- Alpine Plugins -->
+    <script defer src="https://unpkg.com/@alpinejs/persist@3.x.x/dist/cdn.min.js"></script>
+    <script defer src="https://unpkg.com/alpinejs"></script>
     <script src="funcs.js"></script>
     <script src="words.js"></script>
     <script>
@@ -187,40 +189,93 @@
             }
         }
 
+        class GameData {
+            constructor() {
+                this.func = '';
+                this.funcPartsLower = [];
+                this.guesses = [];
+                this.guessedWords = [];
+                this.orangeWords = [];
+                this.currentGuesses = [ 'wp', 'get','attachment','image' ];
+                this.correctWords = ['', '', '', ''];
+                this.finished = false;
+            }
+        }
+
+        class DailyGameData extends GameData {
+            constructor(dayNumber) {
+                super();
+                this.dayNumber = dayNumber;
+
+                const funcForTheDay = atob(funcs[this.dayNumber - 1]);
+                this.func = funcForTheDay;
+                this.funcPartsLower = funcForTheDay.toLowerCase().split('_');
+            }
+        }
+
+        document.addEventListener('alpine:initialized', () => {
+            document.querySelectorAll('.guess.new').forEach(el => {
+                el.classList.remove('new');
+            });
+        });
+
         document.addEventListener('alpine:init', () => {
-            Alpine.data('game', () => {
+            Alpine.data('game', function () {
                 return {
+                    mode: this.$persist('daily'),
 
-                    guesses: [],
+                    // guesses: this.$persist([]),
+                    // guessedWords: this.$persist([]),
+                    // orangeWords: this.$persist([]),
+                    // currentGuesses:this.$persist([ 'wp', 'get','attachment','image' ]),
+                    // correctWords: this.$persist(['', '', '', '']),
+                    // func: this.$persist(''),
+                    // funcPartsLower: this.$persist([]),
+                    // finished: this.$persist(false),
 
-                    guessedWords: [],
+                    dailyGame: this.$persist(null),
+                    randomGame: this.$persist(null),
 
-                    orangeWords: [],
-
-                    currentGuesses:[ 'wp', 'get','attachment','image' ],
-
-                    correctWords: ['', '', '', ''],
-
-                    func: '',
-
-                    funcPartsLower: [],
-
-                    finished: false,
+                    lastKnownDayNumber: this.$persist(null),
 
                     funcForTheDay: '',
 
                     dayNumber: '',
 
+                    currentGame: null,
+
+                    firstDay: new Date(2022, 10, 25),
+
                     init() {
-                        // Calculate how many days since 26th November 2022
+                        // Sync the current game back to the correct persisted value.
+                        this.$watch(this.currentGame, value => {
+                            if (this.mode === 'daily') {
+                                this.dailyGame = value;
+                            } else {
+                                this.randomGame = value;
+                            }
+                        });
+
                         const today = new Date();
-                        const dayOne = new Date(2022, 10, 26);
-                        const diffTime = Math.abs(today - dayOne);
+                        const diffTime = Math.abs(today - this.firstDay);
                         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                         this.dayNumber = diffDays % funcs.length;
-                        this.funcForTheDay = atob(funcs[this.dayNumber - 1]);
-                        this.func = this.funcForTheDay;
-                        this.funcPartsLower = this.funcForTheDay.toLowerCase().split('_');
+
+                        // Create a new daily game if the day has changed
+                        if (this.lastKnownDayNumber !== this.dayNumber) {
+                            this.lastKnownDayNumber = this.dayNumber;
+                            this.dailyGame = new DailyGameData(this.dayNumber);
+                        }
+
+                        // Load the correct game into currentGame
+                        if (this.mode === 'daily') {
+                            this.currentGame = this.dailyGame;
+                        } else {
+                            this.currentGame = this.randomGame;
+                        }
+
+                        this.animateGuesses();
+
                     },
 
                     randomFunc() {
@@ -241,25 +296,24 @@
                             let guessTextLower = guessText.toLowerCase();
 
                             // Clear the guess
-                            this.currentGuesses[i] = '';
+                            this.currentGame.currentGuesses[i] = '';
 
                             // Remove guessed words from the suggestion list
-                            this.removeSuggestion(guessText);
-                            this.guessedWords.push(guessText);
+                            this.currentGame.guessedWords.push(guessText);
 
-                            if (guessTextLower === this.funcPartsLower[i]) {
+                            if (guessTextLower === this.currentGame.funcPartsLower[i]) {
                                 thisGuess.tiles[i] = new Tile(guessTextLower, 2);
-                                this.correctWords[i] = guessTextLower;
-                            } else if (this.funcPartsLower.includes(guessTextLower)) {
+                                this.currentGame.correctWords[i] = guessTextLower;
+                            } else if (this.currentGame.funcPartsLower.includes(guessTextLower)) {
                                 thisGuess.tiles[i] = new Tile(guessTextLower, 1);
-                                this.orangeWords.push(guessTextLower);
+                                this.currentGame.orangeWords.push(guessTextLower);
                             } else {
                                 thisGuess.tiles[i] = new Tile(guessTextLower, 0);
                             }
                             thisGuessedFunc += guessText + '_';
                         }
                         thisGuess.func = thisGuessedFunc.substring(0, thisGuessedFunc.length-1);
-                        this.guesses.push(thisGuess);
+                        this.currentGame.guesses.push(thisGuess);
 
                         Alpine.nextTick(() => this.animateGuesses());
 
@@ -269,21 +323,23 @@
 
                     suggestGuess() {
                         for (let i = 0; i < 4; i++) {
-                            if (this.correctWords[i] !== '') {
-                                this.currentGuesses[i] = this.correctWords[i];
+                            if (this.currentGame.correctWords[i] !== '') {
+                                this.currentGame.currentGuesses[i] = this.currentGame.correctWords[i];
                             } else {
-                                this.currentGuesses[i] = this.getRandomSuggestion();
+                                this.currentGame.currentGuesses[i] = this.getRandomSuggestion();
                             }
                         }
                     },
 
                     getRandomSuggestion() {
-                        return (words.length > 0) ? words[Math.floor(Math.random()*words.length)] : '';
-                    },
+                        if (words.length < 1) {
+                            return '';
+                        }
 
-                    removeSuggestion(word) {
-                        let wordIndex = words.indexOf(word);
-                        words.splice(wordIndex, 1);
+                        // Remove all the items in guessedWords from words
+                        let remainingWords = words.filter(word => ! this.currentGame.guessedWords.includes(word));
+
+                        return (remainingWords.length > 0) ? remainingWords[Math.floor(Math.random()*remainingWords.length)] : '';
                     },
 
                     guessInvalid() {
@@ -297,17 +353,17 @@
                     },
 
                     guessIsValid(guessIndex) {
-                        return this.guessedWords.includes(this.currentGuesses[guessIndex]) || words.includes(this.currentGuesses[guessIndex]);
+                        return this.currentGame.guessedWords.includes(this.currentGame.currentGuesses[guessIndex]) || words.includes(this.currentGame.currentGuesses[guessIndex]);
                     },
 
                     inputIsGreen(i) {
-                        return this.currentGuesses[i].length > 0 && this.correctWords[i] === this.currentGuesses[i]
+                        return this.currentGame.currentGuesses[i].length > 0 && this.currentGame.correctWords[i] === this.currentGame.currentGuesses[i]
                     },
                     inputIsOrange(i) {
-                        return this.currentGuesses[i].length > 0 && this.orangeWords.includes(this.currentGuesses[i] );
+                        return this.currentGame.currentGuesses[i].length > 0 && this.currentGame.orangeWords.includes(this.currentGame.currentGuesses[i] );
                     },
                     inputIsRed(i) {
-                        return this.currentGuesses[i].length > 0 && this.guessedWords.includes(this.currentGuesses[i] );
+                        return this.currentGame.currentGuesses[i].length > 0 && this.currentGame.guessedWords.includes(this.currentGame.currentGuesses[i] );
                     },
                     inputIsGrey(i) {
                         return ! this.guessIsValid(i);
@@ -318,12 +374,12 @@
                     },
 
                     giveUp() {
-                        this.finished = true;
+                        this.currentGame.finished = true;
                     },
 
                     animateGuesses(guesses) {
-                        document.querySelector('.guess.new').classList.remove('new');
-                    }
+                        document.querySelectorAll('.guess.new').forEach(elem => { console.log(elem); elem.classList.remove('new')});
+                    },
                 }
             });
         });
