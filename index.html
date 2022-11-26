@@ -11,6 +11,7 @@
             display: flex;
             justify-content: center;
             padding-top: 40px;
+            padding-bottom: 150px;
             font-family: sans-serif;
         }
         #app {
@@ -92,10 +93,13 @@
             /* background-color: rgb(162, 255, 187); */
             --glow-color: rgb(2, 211, 58);
         }
-        #buttons {
+        .button-group {
             display: flex;
             flex-wrap: wrap;
             margin-top: 10px;
+        }
+        #top-buttons {
+            margin-bottom: 20px;
         }
         button {
             display: block;
@@ -134,10 +138,15 @@
         <p>Guess a WordPress core (PHP) function name that has 4 parts. e.g. <code>wp_get_attachment_image</code> and learn!</br>
         <p>This game is unexpectedly VERY hard, but have a go and <a href="https://twitter.com/magicroundabout">let me know what you think</a>.</p>
 
-        <button @click="changeMode('random')">Random</button>
-        <button @click="changeMode('daily')">Daily</button>
+        <div id="top-buttons" class="button-group">
+            <button @click="changeMode('daily')">Daily</button>
+            <button @click="changeMode('random')">Random</button>
+            <button @click="newRandomPuzzle" x-show="mode==='random'">New Random Puzzle</button>
+        </div>
 
         <h2 x-show="mode === 'daily'">Puzzle number <span x-text="dayNumber"></span></h2>
+        <h2 x-show="mode === 'random'">Random puzzle</h2>
+
         <div class="guesses">
         <template x-for="guess in currentGame.guesses">
             <div class="guess new">
@@ -154,8 +163,8 @@
         <code>_</code> <input x-model="currentGame.currentGuesses[1]" id="part1" type="text" name="part1" :key="part1" @keydown.space.prevent="focusNextInput" :class="{ 'green': inputIsGreen(1), orange: inputIsOrange(1), grey: inputIsGrey(1), red: inputIsRed(1)}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
         <code>_</code> <input x-model="currentGame.currentGuesses[2]" id="part2" type="text" name="part2" :key="part2" @keydown.space.prevent="focusNextInput" :class="{ 'green': inputIsGreen(2), orange: inputIsOrange(2), grey: inputIsGrey(2), red: inputIsRed(2)}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
         <code>_</code> <input x-model="currentGame.currentGuesses[3]" id="part3" type="text" name="part3" :key="part3"                               :class="{ 'green': inputIsGreen(3), orange: inputIsOrange(3), grey: inputIsGrey(3), red: inputIsRed(3)}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-        <p>Guesses: <span x-text="currentGame.guesses.length"></span></p>
-        <div id="buttons">
+        <p>Guesses: <span x-text="currentGame.guesses.length"></span> Words left to try: <span x-text="words.length - currentGame.guessedWords.length"></span></p>
+        <div id="buttons" class="button-group">
             <button class="guessButton" x-bind:disabled="guessInvalid" @click.prevent="processGuess">Guess</button>
             <button class="suggestButton" @click.prevent="suggestGuess">Suggest</button>
             <button class="giveUpButton" @click.prevent="giveUp">Give Up</button>
@@ -216,6 +225,16 @@
             }
         }
 
+        class RandomGameData extends GameData {
+            constructor() {
+                super();
+                const randomIndex = Math.floor(Math.random() * funcs.length);
+
+                this.func = atob(funcs[randomIndex]);
+                this.funcPartsLower = this.func.toLowerCase().split('_');
+            }
+        }
+
         document.addEventListener('alpine:initialized', () => {
             document.querySelectorAll('.guess.new').forEach(el => {
                 el.classList.remove('new');
@@ -247,11 +266,13 @@
 
                     currentGame: null,
 
-                    firstDay: new Date(2022, 10, 25),
+                    firstDay: new Date(2022, 10, 26),
 
                     init() {
                         // Sync the current game back to the correct persisted value.
+                        // TODO: Is this doing anything?
                         this.$watch(this.currentGame, value => {
+                            console.log('Watcher triggered for: ', value);
                             if (this.mode === 'daily') {
                                 this.dailyGame = value;
                             } else {
@@ -268,6 +289,10 @@
                         if (this.lastKnownDayNumber !== this.dayNumber) {
                             this.lastKnownDayNumber = this.dayNumber;
                             this.dailyGame = new DailyGameData(this.dayNumber);
+                        }
+
+                        if (this.randomGame === null) {
+                            this.randomGame = new RandomGameData();
                         }
 
                         // Set the initial game mode
@@ -294,6 +319,14 @@
                         } else {
                             this.currentGame = this.randomGame;
                         }
+                    },
+
+                    newRandomPuzzle() {
+                        this.currentGame = new RandomGameData();
+                        this.randomGame = this.currentGame;
+                        this.$nextTick(() => {
+                            this.animateGuesses();
+                        });
                     },
 
                     randomFunc() {
@@ -333,10 +366,23 @@
                         thisGuess.func = thisGuessedFunc.substring(0, thisGuessedFunc.length-1);
                         this.currentGame.guesses.push(thisGuess);
 
-                        Alpine.nextTick(() => this.animateGuesses());
+                        Alpine.nextTick(() => {
+                            this.animateGuesses()
+                            this.checkFinished()
+                        });
+
+                        // Remove duplicate words from guessedWords
+                        this.currentGame.guessedWords = [...new Set(this.currentGame.guessedWords)];
 
                         // Focus/select the first input
                         document.getElementById(`part0`).focus();
+                    },
+
+                    checkFinished() {
+                        if (this.currentGame.correctWords.includes('')) {
+                            return;
+                        }
+                        this.currentGame.finished = true;
                     },
 
                     suggestGuess() {
