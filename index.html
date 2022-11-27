@@ -53,6 +53,7 @@
             padding: 0 20px 150px 20px;
             max-width: var(--max-body-width);
             margin: 0 auto;
+            font-size: 18px;
         }
         #app {
             width: 100%;
@@ -92,6 +93,9 @@
         p {
             line-height: 1.3;
             text-align: center;
+        }
+        code {
+            font-size: 1.2rem;
         }
         button {
             display: block;
@@ -240,6 +244,11 @@
         #answer {
             margin-top: 12px;
         }
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 40px;
+        }
     </style>
 </head>
 
@@ -291,11 +300,14 @@
             <button class="suggestButton" @click.prevent="suggestGuess">Suggest</button>
             <button class="giveUpButton" @click.prevent="giveUp">Give Up</button>
         </div>
-        <p>Guesses: <span x-text="currentGame.guesses.length"></span> Words left to try: <span x-text="words.length - currentGame.guessedWords.length"></span></p>
+        <div class="stats">
+            <div class="stat">Guesses: <span x-text="currentGame.guesses.length"></span></div>
+            <div class="stat">Words left to try: <span x-text="words.length - currentGame.guessedWords.length"></span></div>
+        </div>
 
         <template x-if="currentGame.finished" x-cloak>
             <div id="answer">
-                It was: <span x-text="currentGame.func"></span> (<a target="_blank" :href="'https://developer.wordpress.org/reference/functions/' + currentGame.func">View docs</a>)
+                It was: <code x-text="currentGame.func"></code> (<a target="_blank" :href="'https://developer.wordpress.org/reference/functions/' + currentGame.func">View docs</a>)
             </div>
         </template>
     </main>
