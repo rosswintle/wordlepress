@@ -72,10 +72,10 @@
             outline: none;
             border: 1px solid black;
             border-radius: 4px;
-            --glow-color: white;
-            -webkit-box-shadow: 0px 0px 5px 1px var(--glow-color);
-            -moz-box-shadow: 0px 0px 5px 1px var(--glow-color);
-            box-shadow: 0px 0px 5px 1px var(--glow-color);
+            /* --glow-color: white */
+            -webkit-box-shadow: 0px 0px 5px 1px white;
+            -moz-box-shadow: 0px 0px 5px 1px white;
+            box-shadow: 0px 0px 5px 1px white;
         }
         /* The order of these is important as a word may have multiple of these classes */
         input.grey {
@@ -83,14 +83,23 @@
         }
         input.red {
             /* background-color: rgb(253, 155, 135); */
+            -webkit-box-shadow: 0px 0px 5px 1px rgb(188, 31, 0);
+            -moz-box-shadow: 0px 0px 5px 1px rgb(188, 31, 0);
+            box-shadow: 0px 0px 5px 1px rgb(188, 31, 0);
             --glow-color: rgb(188, 31, 0);
         }
         input.orange {
             /* background-color: rgb(255, 222, 122); */
+            -webkit-box-shadow: 0px 0px 5px 1px rgb(207, 128, 0);
+            -moz-box-shadow: 0px 0px 5px 1px rgb(207, 128, 0);
+            box-shadow: 0px 0px 5px 1px rgb(207, 128, 0);
             --glow-color: rgb(207, 128, 0);
         }
         input.green {
             /* background-color: rgb(162, 255, 187); */
+            -webkit-box-shadow: 0px 0px 5px 1px rgb(2, 211, 58);
+            -moz-box-shadow: 0px 0px 5px 1px rgb(2, 211, 58);
+            box-shadow: 0px 0px 5px 1px rgb(2, 211, 58);
             --glow-color: rgb(2, 211, 58);
         }
         .button-group {
