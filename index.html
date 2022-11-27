@@ -181,9 +181,11 @@
     </form>
     <p>Guesses: <span x-text="currentGame.guesses.length"></span> Words left to try: <span x-text="words.length - currentGame.guessedWords.length"></span></p>
 
-    <div id="answer" x-show="currentGame.finished" x-cloak>
-        It was: <span x-text="currentGame.func"></span> (<a target="_blank" :href="'https://developer.wordpress.org/reference/functions/' + currentGame.func">View docs</a>)
-    </div>
+    <template x-if="currentGame.finished" x-cloak>
+        <div id="answer">
+            It was: <span x-text="currentGame.func"></span> (<a target="_blank" :href="'https://developer.wordpress.org/reference/functions/' + currentGame.func">View docs</a>)
+        </div>
+    </template>
 
     <div class="sponsor">
         If you like this, I also made <a href="https://turbo-admin.com">a browser extension</a> you might like!
