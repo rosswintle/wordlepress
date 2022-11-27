@@ -5,23 +5,147 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WordlePress</title>
+    <title>WordlePress - a Wordle-style guessing game for WordPress developers</title>
     <style>
+        @font-face {
+            font-family: "eb-garamond";
+            src: url("fonts/EB_Garamond/static/EBGaramond-Regular.ttf");
+        }
+        :root {
+            --wordpress-blue: #3858e9;
+            --max-body-width: 600px;
+            --wordpress-grey: #23282D;
+            --wordpress-gray: var(--wordpress-grey);
+        }
         body {
+            margin: 0;
+            font-family: sans-serif;
+            color: var(--wordpress-gray);
+        }
+        header {
+            width: 100%;
+            background-color: var(--wordpress-blue);
+            color: white;
+            padding: 12px;
+            margin-bottom: 20px;
             display: flex;
             justify-content: center;
-            padding-top: 40px;
-            padding-bottom: 150px;
-            font-family: sans-serif;
+        }
+        .sponsor {
+            width: 100%;
+            max-width: var(--max-body-width);
+            padding: 0 12px;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+        .sponsor a {
+            color: white;
+            text-decoration: underline;
+        }
+        .sponsor a:hover,
+        .sponsor a:focus {
+            /* text-decoration: none; */
+            text-decoration-style: wavy;
+        }
+        main {
+            display: flex;
+            justify-content: center;
+            padding: 0 20px 150px 20px;
+            max-width: var(--max-body-width);
+            margin: 0 auto;
         }
         #app {
-            max-width: 600px;
+            width: 100%;
         }
         [x-cloak] {
             display: none !important;
         }
+        nav {
+            width: 100%;
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 20px;
+        }
+        nav ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: flex-end;
+        }
+        nav li {
+            margin: 0 0 0 12px;
+        }
+        nav a {
+            color: var(--wordpress-gray);
+            text-decoration: none;
+        }
+        h1 {
+            font-family: eb-garamond, serif;
+            font-size: 4rem;
+            font-weight: normal;
+            text-align: center;
+            margin-top: 0;
+            line-height: 1;
+            margin-bottom: 20px;
+        }
         p {
             line-height: 1.3;
+            text-align: center;
+        }
+        button {
+            display: block;
+            width: 150px;
+            height: auto;
+            padding: 10px 14px;
+            font-size: 18px;
+            margin-top: 5px;
+            margin-right: 10px;
+            background-color: var(--wordpress-blue);
+            color: #FFF;
+            box-shadow: none;
+            border: 0 none;
+            text-transform: uppercase;
+            letter-spacing: 0.2;
+            cursor: pointer;
+        }
+        button:disabled {
+            background-color: #999;
+            cursor: not-allowed;
+        }
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 10px;
+        }
+        #top-buttons {
+            margin-bottom: 20px;
+        }
+
+        #top-buttons button {
+            font-size: 1rem;
+            background-color: white;
+            color: var(--wordpress-gray);
+            border: 1px solid var(--wordpress-gray);
+        }
+        .title-with-button {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .title-with-button button {
+            font-size: 0.8rem;
+            background-color: white;
+            color: var(--wordpress-gray);
+            border: 1px solid var(--wordpress-gray);
+            width: auto;
+            padding: 4px 8px;
+            margin: 0;
+        }
+        .guesses {
+            display: flex;
+            flex-direction: column;
         }
         .guess {
             display: flex;
@@ -61,6 +185,13 @@
         }
         form {
             margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: end;
+        }
+        form code {
+            margin: 0 4px 5px 4px;
         }
         input {
             width: 100px;
@@ -73,10 +204,13 @@
             border: 1px solid black;
             border-radius: 4px;
             -webkit-appearance: none;
-            /* --glow-color: white */
-            -webkit-box-shadow: 0px 0px 5px 1px white;
-            -moz-box-shadow: 0px 0px 5px 1px white;
-            box-shadow: 0px 0px 5px 1px white;
+            --glow-color: white
+            -webkit-box-shadow: 0px 0px 5px 1px var(--glow-color);
+            -moz-box-shadow: 0px 0px 5px 1px var(--glow-color);
+            box-shadow: 0px 0px 5px 1px var(--glow-color);
+        }
+        input:last-of-type {
+            margin-right: 16px;
         }
         /* The order of these is important as a word may have multiple of these classes */
         input.grey {
@@ -84,112 +218,88 @@
         }
         input.red {
             /* background-color: rgb(253, 155, 135); */
-            -webkit-box-shadow: 0px 0px 5px 1px rgb(188, 31, 0);
+            /* -webkit-box-shadow: 0px 0px 5px 1px rgb(188, 31, 0);
             -moz-box-shadow: 0px 0px 5px 1px rgb(188, 31, 0);
-            box-shadow: 0px 0px 5px 1px rgb(188, 31, 0);
+            box-shadow: 0px 0px 5px 1px rgb(188, 31, 0); */
             --glow-color: rgb(188, 31, 0);
         }
         input.orange {
             /* background-color: rgb(255, 222, 122); */
-            -webkit-box-shadow: 0px 0px 5px 1px rgb(207, 128, 0);
+            /* -webkit-box-shadow: 0px 0px 5px 1px rgb(207, 128, 0);
             -moz-box-shadow: 0px 0px 5px 1px rgb(207, 128, 0);
-            box-shadow: 0px 0px 5px 1px rgb(207, 128, 0);
+            box-shadow: 0px 0px 5px 1px rgb(207, 128, 0); */
             --glow-color: rgb(207, 128, 0);
         }
         input.green {
             /* background-color: rgb(162, 255, 187); */
-            -webkit-box-shadow: 0px 0px 5px 1px rgb(2, 211, 58);
+            /* -webkit-box-shadow: 0px 0px 5px 1px rgb(2, 211, 58);
             -moz-box-shadow: 0px 0px 5px 1px rgb(2, 211, 58);
-            box-shadow: 0px 0px 5px 1px rgb(2, 211, 58);
+            box-shadow: 0px 0px 5px 1px rgb(2, 211, 58); */
             --glow-color: rgb(2, 211, 58);
-        }
-        .button-group {
-            display: flex;
-            flex-wrap: wrap;
-            margin-top: 10px;
-        }
-        #top-buttons {
-            margin-bottom: 20px;
-        }
-        button {
-            display: block;
-            width: 150px;
-            height: auto;
-            padding: 10px 0;
-            font-size: 18px;
-            margin-top: 5px;
-            margin-right: 10px;
-            background-color: #7f7fde;
-            color: #FFF;
-            box-shadow: none;
-            border: 0 none;
-            text-transform: uppercase;
-            letter-spacing: 0.2;
-            cursor: pointer;
-        }
-        button:disabled {
-            background-color: #999;
-            cursor: not-allowed;
         }
         #answer {
             margin-top: 12px;
-        }
-        .sponsor {
-            margin-top: 40px;
-            font-size: 0.9rem;
-            font-style: italic;
         }
     </style>
 </head>
 
 <body>
-    <div x-data="game" id="app">
-        <h1>WordlePress</h1>
-        <p>Guess a WordPress core (PHP) function name that has 4 parts. e.g. <code>wp_get_attachment_image</code> and learn! - <a href="https://rosswintle.uk/2022/11/wordlepress-a-game-for-wordpress-developers/">Instructions (for now)</a></br>
-        <p>This game is unexpectedly VERY hard, but have a go and <a href="https://rw.omg.lol/">let me know what you think</a>.</p>
-
-        <div id="top-buttons" class="button-group">
-            <button @click="changeMode('daily')">Daily</button>
-            <button @click="changeMode('random')">Random</button>
-            <button @click="newRandomPuzzle" x-show="mode==='random'">New Random Puzzle</button>
+    <header>
+        <div class="sponsor">
+            If you like this, I also made <a href="https://turbo-admin.com">a browser extension</a> you might like! Or you can <a href="https://ko-fi.com/magicroundabout">buy me a coffee</a>.
         </div>
+    </header>
+    <main>
+        <div x-data="game" id="app">
+            <nav>
+                <ul>
+                    <li><a href="#">Settings</a></li>
+                    <li><a href="https://rosswintle.uk/2022/11/wordlepress-a-game-for-wordpress-developers/">Help</a></li>
+                </ul>
+            </nav>
+            <h1>WordlePress</h1>
+            <p>Guess a WordPress core (PHP) function name that has 4 parts. e.g. <code>wp_get_attachment_image</code> and learn!</p>
 
-        <h2 x-show="mode === 'daily'">Puzzle number <span x-text="dayNumber"></span></h2>
-        <h2 x-show="mode === 'random'">Random puzzle</h2>
-
-        <div class="guesses">
-        <template x-for="guess in currentGame.guesses">
-            <div class="guess new">
-                <span :class="{ 'guess-box': true, 'orange': guess.tiles[0].state === 1, 'green': guess.tiles[0].state === 2 }"></span>
-                <span :class="{ 'guess-box': true, 'orange': guess.tiles[1].state === 1, 'green': guess.tiles[1].state === 2 }"></span>
-                <span :class="{ 'guess-box': true, 'orange': guess.tiles[2].state === 1, 'green': guess.tiles[2].state === 2 }"></span>
-                <span :class="{ 'guess-box': true, 'orange': guess.tiles[3].state === 1, 'green': guess.tiles[3].state === 2 }"></span>
-                <span class="guessed-function" x-text="guess.func"></span>
+            <div id="top-buttons" class="button-group">
+                <button @click="changeMode('daily')">Daily</button>
+                <button @click="changeMode('random')">Random</button>
             </div>
-        </template>
-    </div>
-    <form action="/" x-show="! currentGame.finished">
-                       <input x-model="currentGame.currentGuesses[0]" id="part0" type="text" name="part0" :key="part0" @keydown.space.prevent="focusNextInput" :class="{ 'green': inputIsGreen(0), orange: inputIsOrange(0), grey: inputIsGrey(0), red: inputIsRed(0)}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-        <code>_</code> <input x-model="currentGame.currentGuesses[1]" id="part1" type="text" name="part1" :key="part1" @keydown.space.prevent="focusNextInput" :class="{ 'green': inputIsGreen(1), orange: inputIsOrange(1), grey: inputIsGrey(1), red: inputIsRed(1)}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-        <code>_</code> <input x-model="currentGame.currentGuesses[2]" id="part2" type="text" name="part2" :key="part2" @keydown.space.prevent="focusNextInput" :class="{ 'green': inputIsGreen(2), orange: inputIsOrange(2), grey: inputIsGrey(2), red: inputIsRed(2)}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-        <code>_</code> <input x-model="currentGame.currentGuesses[3]" id="part3" type="text" name="part3" :key="part3"                               :class="{ 'green': inputIsGreen(3), orange: inputIsOrange(3), grey: inputIsGrey(3), red: inputIsRed(3)}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+
+            <h2 x-show="mode === 'daily'">Puzzle number <span x-text="dayNumber"></span></h2>
+            <h2 class="title-with-button" x-show="mode === 'random'">Random puzzle <button @click="newRandomPuzzle" x-show="mode==='random'">New Random Puzzle</button>
+            </h2>
+
+            <div class="guesses">
+            <template x-for="guess in currentGame.guesses">
+                <div class="guess new">
+                    <span :class="{ 'guess-box': true, 'orange': guess.tiles[0].state === 1, 'green': guess.tiles[0].state === 2 }"></span>
+                    <span :class="{ 'guess-box': true, 'orange': guess.tiles[1].state === 1, 'green': guess.tiles[1].state === 2 }"></span>
+                    <span :class="{ 'guess-box': true, 'orange': guess.tiles[2].state === 1, 'green': guess.tiles[2].state === 2 }"></span>
+                    <span :class="{ 'guess-box': true, 'orange': guess.tiles[3].state === 1, 'green': guess.tiles[3].state === 2 }"></span>
+                    <span class="guessed-function" x-text="guess.func"></span>
+                </div>
+            </template>
+        </div>
+        <form action="/" x-show="! currentGame.finished">
+                        <input x-model="currentGame.currentGuesses[0]" id="part0" type="text" name="part0" :key="part0" @keydown.space.prevent="focusNextInput" :class="{ 'green': inputIsGreen(0), orange: inputIsOrange(0), grey: inputIsGrey(0), red: inputIsRed(0)}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+            <code>_</code> <input x-model="currentGame.currentGuesses[1]" id="part1" type="text" name="part1" :key="part1" @keydown.space.prevent="focusNextInput" :class="{ 'green': inputIsGreen(1), orange: inputIsOrange(1), grey: inputIsGrey(1), red: inputIsRed(1)}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+            <code>_</code> <input x-model="currentGame.currentGuesses[2]" id="part2" type="text" name="part2" :key="part2" @keydown.space.prevent="focusNextInput" :class="{ 'green': inputIsGreen(2), orange: inputIsOrange(2), grey: inputIsGrey(2), red: inputIsRed(2)}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+            <code>_</code> <input x-model="currentGame.currentGuesses[3]" id="part3" type="text" name="part3" :key="part3"                               :class="{ 'green': inputIsGreen(3), orange: inputIsOrange(3), grey: inputIsGrey(3), red: inputIsRed(3)}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+        </form>
         <div id="buttons" class="button-group">
             <button class="guessButton" x-bind:disabled="guessInvalid" @click.prevent="processGuess">Guess</button>
             <button class="suggestButton" @click.prevent="suggestGuess">Suggest</button>
             <button class="giveUpButton" @click.prevent="giveUp">Give Up</button>
         </div>
-    </form>
-    <p>Guesses: <span x-text="currentGame.guesses.length"></span> Words left to try: <span x-text="words.length - currentGame.guessedWords.length"></span></p>
+        <p>Guesses: <span x-text="currentGame.guesses.length"></span> Words left to try: <span x-text="words.length - currentGame.guessedWords.length"></span></p>
 
-    <template x-if="currentGame.finished" x-cloak>
-        <div id="answer">
-            It was: <span x-text="currentGame.func"></span> (<a target="_blank" :href="'https://developer.wordpress.org/reference/functions/' + currentGame.func">View docs</a>)
-        </div>
-    </template>
+        <template x-if="currentGame.finished" x-cloak>
+            <div id="answer">
+                It was: <span x-text="currentGame.func"></span> (<a target="_blank" :href="'https://developer.wordpress.org/reference/functions/' + currentGame.func">View docs</a>)
+            </div>
+        </template>
+    </main>
 
-    <div class="sponsor">
-        If you like this, I also made <a href="https://turbo-admin.com">a browser extension</a> you might like! Or you can <a href="https://ko-fi.com/magicroundabout">buy me a coffee</a>.
-    </div>
     <!-- Fathom - beautiful, simple website analytics -->
     <script src="https://cdn.usefathom.com/script.js" data-site="RQQYYYJA" defer></script>
     <!-- / Fathom -->
