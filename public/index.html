@@ -6,6 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WordlePress - a Wordle-style guessing game for WordPress developers</title>
+    <link rel="stylesheet" href="css/styles.css">
     <style>
         @font-face {
             font-family: "eb-garamond";
@@ -256,7 +257,7 @@
 <body>
     <header>
         <div class="sponsor">
-            !!! If you like this, I also made <a href="https://turbo-admin.com">a browser extension</a> you might like! Or you can <a href="https://ko-fi.com/magicroundabout">buy me a coffee</a>.
+            If you like this, I also made <a href="https://turbo-admin.com">a browser extension</a> you might like! Or you can <a href="https://ko-fi.com/magicroundabout">buy me a coffee</a>.
         </div>
     </header>
     <main>
@@ -280,43 +281,92 @@
             </h2>
 
             <div class="guesses">
-            <template x-for="guess in currentGame.guesses">
-                <div class="guess new">
-                    <span :class="{ 'guess-box': true, 'orange': guess.tiles[0].state === 1, 'green': guess.tiles[0].state === 2 }"></span>
-                    <span :class="{ 'guess-box': true, 'orange': guess.tiles[1].state === 1, 'green': guess.tiles[1].state === 2 }"></span>
-                    <span :class="{ 'guess-box': true, 'orange': guess.tiles[2].state === 1, 'green': guess.tiles[2].state === 2 }"></span>
-                    <span :class="{ 'guess-box': true, 'orange': guess.tiles[3].state === 1, 'green': guess.tiles[3].state === 2 }"></span>
-                    <span class="guessed-function" x-text="guess.func"></span>
+                <template x-for="guess in currentGame.guesses">
+                    <div class="guess new">
+                        <span :class="{ 'guess-box': true, 'orange': guess.tiles[0].state === 1, 'green': guess.tiles[0].state === 2 }"></span>
+                        <span :class="{ 'guess-box': true, 'orange': guess.tiles[1].state === 1, 'green': guess.tiles[1].state === 2 }"></span>
+                        <span :class="{ 'guess-box': true, 'orange': guess.tiles[2].state === 1, 'green': guess.tiles[2].state === 2 }"></span>
+                        <span :class="{ 'guess-box': true, 'orange': guess.tiles[3].state === 1, 'green': guess.tiles[3].state === 2 }"></span>
+                        <span class="guessed-function" x-text="guess.func"></span>
+                    </div>
+                </template>
+            </div>
+            <form action="/" x-show="! currentGame.finished">
+                            <input x-model="currentGame.currentGuesses[0]" id="part0" type="text" name="part0" :key="part0" @keydown.space.prevent="focusNextInput" :class="{ 'green': inputIsGreen(0), orange: inputIsOrange(0), grey: inputIsGrey(0), red: inputIsRed(0)}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+                <code>_</code> <input x-model="currentGame.currentGuesses[1]" id="part1" type="text" name="part1" :key="part1" @keydown.space.prevent="focusNextInput" :class="{ 'green': inputIsGreen(1), orange: inputIsOrange(1), grey: inputIsGrey(1), red: inputIsRed(1)}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+                <code>_</code> <input x-model="currentGame.currentGuesses[2]" id="part2" type="text" name="part2" :key="part2" @keydown.space.prevent="focusNextInput" :class="{ 'green': inputIsGreen(2), orange: inputIsOrange(2), grey: inputIsGrey(2), red: inputIsRed(2)}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+                <code>_</code> <input x-model="currentGame.currentGuesses[3]" id="part3" type="text" name="part3" :key="part3"                               :class="{ 'green': inputIsGreen(3), orange: inputIsOrange(3), grey: inputIsGrey(3), red: inputIsRed(3)}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+            </form>
+            <div id="buttons" class="button-group">
+                <button class="guessButton" x-bind:disabled="guessInvalid" @click.prevent="processGuess">Guess</button>
+                <button class="suggestButton" @click.prevent="suggestGuess">Suggest</button>
+                <button class="giveUpButton" @click.prevent="giveUp">Give Up</button>
+            </div>
+            <div class="stats">
+                <div class="stat">Guesses: <span x-text="currentGame.guesses.length"></span></div>
+                <div class="stat">Words left to try: <span x-text="words.length - currentGame.guessedWords.length"></span></div>
+            </div>
+
+            <template x-if="currentGame.finished" x-cloak>
+                <div id="answer">
+                    It was: <code x-text="currentGame.func"></code> (<a target="_blank" :href="'https://developer.wordpress.org/reference/functions/' + currentGame.func">View docs</a>)
                 </div>
             </template>
-        </div>
-        <form action="/" x-show="! currentGame.finished">
-                        <input x-model="currentGame.currentGuesses[0]" id="part0" type="text" name="part0" :key="part0" @keydown.space.prevent="focusNextInput" :class="{ 'green': inputIsGreen(0), orange: inputIsOrange(0), grey: inputIsGrey(0), red: inputIsRed(0)}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-            <code>_</code> <input x-model="currentGame.currentGuesses[1]" id="part1" type="text" name="part1" :key="part1" @keydown.space.prevent="focusNextInput" :class="{ 'green': inputIsGreen(1), orange: inputIsOrange(1), grey: inputIsGrey(1), red: inputIsRed(1)}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-            <code>_</code> <input x-model="currentGame.currentGuesses[2]" id="part2" type="text" name="part2" :key="part2" @keydown.space.prevent="focusNextInput" :class="{ 'green': inputIsGreen(2), orange: inputIsOrange(2), grey: inputIsGrey(2), red: inputIsRed(2)}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-            <code>_</code> <input x-model="currentGame.currentGuesses[3]" id="part3" type="text" name="part3" :key="part3"                               :class="{ 'green': inputIsGreen(3), orange: inputIsOrange(3), grey: inputIsGrey(3), red: inputIsRed(3)}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-        </form>
-        <div id="buttons" class="button-group">
-            <button class="guessButton" x-bind:disabled="guessInvalid" @click.prevent="processGuess">Guess</button>
-            <button class="suggestButton" @click.prevent="suggestGuess">Suggest</button>
-            <button class="giveUpButton" @click.prevent="giveUp">Give Up</button>
-        </div>
-        <div class="stats">
-            <div class="stat">Guesses: <span x-text="currentGame.guesses.length"></span></div>
-            <div class="stat">Words left to try: <span x-text="words.length - currentGame.guessedWords.length"></span></div>
-        </div>
 
-        <template x-if="currentGame.finished" x-cloak>
-            <div id="answer">
-                It was: <code x-text="currentGame.func"></code> (<a target="_blank" :href="'https://developer.wordpress.org/reference/functions/' + currentGame.func">View docs</a>)
+            <!-- Completed modal -->
+
+            <div
+                x-show="open"
+                style="display: none"
+                x-on:keydown.escape.prevent.stop="open = false"
+                role="dialog"
+                aria-modal="true"
+                x-id="['modal-title']"
+                :aria-labelledby="$id('modal-title')"
+                class="fixed inset-0 z-10 overflow-y-auto"
+            >
+                <!-- Overlay -->
+                <div x-show="open" x-transition.opacity class="fixed inset-0 bg-black bg-opacity-50"></div>
+
+                <!-- Panel -->
+                <div
+                    x-show="open" x-transition
+                    x-on:click="open = false"
+                    class="relative flex min-h-screen items-center justify-center p-4"
+                >
+                    <div
+                        x-on:click.stop
+                        x-trap.noscroll.inert="open"
+                        class="relative w-full max-w-2xl overflow-y-auto rounded-xl bg-white p-12 shadow-lg"
+                    >
+                        <!-- Title -->
+                        <h2 class="text-3xl font-bold" :id="$id('modal-title')">Confirm</h2>
+
+                        <!-- Content -->
+                        <p class="mt-2 text-gray-600">Are you sure you want to learn how to create an awesome modal?</p>
+
+                        <!-- Buttons -->
+                        <div class="mt-8 flex space-x-2">
+                            <button type="button" x-on:click="open = false" class="rounded-md border border-gray-200 bg-white px-5 py-2.5">
+                                Confirm
+                            </button>
+
+                            <button type="button" x-on:click="open = false" class="rounded-md border border-gray-200 bg-white px-5 py-2.5">
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </template>
+        </div>
+    </div>
     </main>
 
     <!-- Fathom - beautiful, simple website analytics -->
     <script src="https://cdn.usefathom.com/script.js" data-site="RQQYYYJA" defer></script>
     <!-- / Fathom -->
     <!-- Alpine Plugins -->
+    <script defer src="https://unpkg.com/@alpinejs/focus@3.x.x/dist/cdn.min.js"></script>
     <script defer src="https://unpkg.com/@alpinejs/persist@3.x.x/dist/cdn.min.js"></script>
     <script defer src="https://unpkg.com/alpinejs"></script>
     <script src="funcs.js"></script>
@@ -402,6 +452,8 @@
                     currentGame: null,
 
                     firstDay: new Date(2022, 10, 26),
+
+                    open: false,
 
                     init() {
                         // Sync the current game back to the correct persisted value.
