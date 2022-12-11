@@ -552,8 +552,11 @@
                         thisGuess.func = thisGuessedFunc.substring(0, thisGuessedFunc.length-1);
                         this.currentGame.guesses.push(thisGuess);
 
-                        // Update the guess sharing text
-                        this.currentGame.sharingTextItems.add(thisGuessSharingText);
+                        // Update the guess sharing text if it exists (when updating your game
+                        // just after I added this code, it could fail)
+                        if (this.currentGame.sharingTextItems) {
+                            this.currentGame.sharingTextItems.add(thisGuessSharingText);
+                        }
 
                         Alpine.nextTick(() => {
                             this.animateGuesses()
