@@ -332,9 +332,9 @@
             <!-- Completed modal -->
 
             <div
-                x-show="open"
+                x-show="finishedModalOpen"
                 style="display: none"
-                x-on:keydown.escape.prevent.stop="open = false"
+                x-on:keydown.escape.prevent.stop="finishedModalOpen = false"
                 role="dialog"
                 aria-modal="true"
                 x-id="['modal-title']"
@@ -342,17 +342,17 @@
                 class="fixed inset-0 z-10 overflow-y-auto"
             >
                 <!-- Overlay -->
-                <div x-show="open" x-transition.opacity class="fixed inset-0 bg-black bg-opacity-50"></div>
+                <div x-show="finishedModalOpen" x-transition.opacity class="fixed inset-0 bg-black bg-opacity-50"></div>
 
                 <!-- Panel -->
                 <div
-                    x-show="open" x-transition
-                    x-on:click="open = false"
+                    x-show="finishedModalOpen" x-transition
+                    x-on:click="finishedModalOpen = false"
                     class="relative flex min-h-screen items-center justify-center p-4"
                 >
                     <div
                         x-on:click.stop
-                        x-trap.noscroll.inert="open"
+                        x-trap.noscroll.inert="finishedModalOpen"
                         class="relative w-full max-w-2xl overflow-y-auto rounded-xl bg-white p-12 shadow-lg"
                     >
                         <!-- Title -->
@@ -436,6 +436,7 @@
             }
         }
 
+        // When reloading, show all the guesses so far
         document.addEventListener('alpine:initialized', () => {
             document.querySelectorAll('.guess.new').forEach(el => {
                 el.classList.remove('new');
@@ -469,7 +470,7 @@
 
                     firstDay: new Date(2022, 10, 26),
 
-                    open: false,
+                    finishedModalOpen: false,
 
                     init() {
                         // Sync the current game back to the correct persisted value.
@@ -642,6 +643,7 @@
 
                     giveUp() {
                         this.currentGame.finished = true;
+                        // this.finishedModalOpen = true;
                     },
 
                     animateGuesses(guesses) {
