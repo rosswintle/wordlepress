@@ -297,9 +297,9 @@
             <code>_</code> <input x-model="currentGame.currentGuesses[3]" id="part3" type="text" name="part3" :key="part3"                               :class="{ 'green': inputIsGreen(3), orange: inputIsOrange(3), grey: inputIsGrey(3), red: inputIsRed(3)}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
         </form>
         <div id="buttons" class="button-group">
-            <button class="guessButton" x-bind:disabled="guessInvalid" @click.prevent="processGuess">Guess</button>
-            <button class="suggestButton" @click.prevent="suggestGuess">Suggest</button>
-            <button class="giveUpButton" @click.prevent="giveUp">Give Up</button>
+            <button class="guessButton" x-bind:disabled="guessInvalid || currentGame.finished" @click.prevent="processGuess">Guess</button>
+            <button class="suggestButton" x-bind:disabled="currentGame.finished" @click.prevent="suggestGuess">Suggest</button>
+            <button class="giveUpButton" x-bind:disabled="currentGame.finished" @click.prevent="giveUp">Give Up</button>
         </div>
         <div class="stats">
             <div class="stat">Guesses: <span x-text="currentGame.guesses.length"></span></div>
