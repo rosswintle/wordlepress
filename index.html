@@ -305,15 +305,17 @@
             <div class="stat">Guesses: <span x-text="currentGame.guesses.length"></span></div>
             <div class="stat">Words left to try: <span x-text="words.length - currentGame.guessedWords.length"></span></div>
         </div>
-            <p>Share your result: </p>
-            <div id="sharing" x-html="currentGame.sharingTextItems.toString()">
-
-            </div>
 
         <template x-if="currentGame.finished" x-cloak>
             <div id="answer">
                 It was: <code x-text="currentGame.func"></code> (<a target="_blank" :href="'https://developer.wordpress.org/reference/functions/' + currentGame.func">View docs</a>)
             </div>
+            <!--
+            <p>Share your result: </p>
+            <div id="sharing" x-html="currentGame.sharingTextItems.toString()">
+
+            </div>
+            -->
         </template>
     </main>
 
@@ -337,6 +339,45 @@
             constructor(func = '') {
                 this.func = func;
                 this.tiles = [];
+            }
+        }
+
+        class SharingTextItem {
+            constructor(text, count) {
+                this.text = text;
+                this.count = count;
+            }
+        }
+
+        class SharingTextItems {
+            constructor() {
+                /** @type {SharingTextItem[]} */
+                this.items = [];
+            }
+
+            add(text) {
+                if (this.items.length === 0) {
+                    this.items.push(new SharingTextItem(text, 1));
+                    return;
+                }
+                if (this.last().text === text) {
+                    this.last().count++;
+                    return;
+                }
+                this.items.push(new SharingTextItem(text, 1));
+            }
+
+            last() {
+                return this.items[this.items.length - 1];
+            }
+
+            toString() {
+                return this.items.map(item => {
+                    if (item.count === 1) {
+                        return item.text;
+                    }
+                    return `${item.text} x ${item.count}`;
+                }).join('<br>');
             }
         }
 
@@ -372,45 +413,6 @@
 
                 this.func = atob(funcs[randomIndex]);
                 this.funcPartsLower = this.func.toLowerCase().split('_');
-            }
-        }
-
-        class SharingTextItem {
-            constructor(text, count) {
-                this.text = text;
-                this.count = count;
-            }
-        }
-
-        class SharingTextItems {
-            constructor() {
-                /** @type {SharingTextItem[]} */
-                this.items = [];
-            }
-
-            add(text) {
-                if (this.items.length === 0) {
-                    this.items.push(new SharingTextItem(text, 0));
-                    return;
-                }
-                if (this.last().text === text) {
-                    this.last().count++;
-                    return;
-                }
-                this.items.push(new SharingTextItem(text, count));
-            }
-
-            last() {
-                return this.items[this.items.length - 1];
-            }
-
-            toString() {
-                return this.items.map(item => {
-                    if (item.count === 0) {
-                        return item.text;
-                    }
-                    return `${item.text} x ${item.count + 1}`;
-                }).join('<br>');
             }
         }
 
@@ -518,14 +520,14 @@
                             return;
                         }
 
-                        thisGuess = new Guess();
-                        thisGuessedFunc = '';
+                        let thisGuess = new Guess();
+                        let thisGuessedFunc = '';
+                        let thisGuessSharingText = '';
 
                         for (let i = 0; i < 4; i++) {
                             elem = document.getElementById(`part${i}`);
                             let guessText = elem.value.toLowerCase();
                             let guessTextLower = guessText.toLowerCase();
-                            let thisGuessSharingText = '';
 
                             // Clear the guess
                             this.currentGame.currentGuesses[i] = '';
@@ -540,10 +542,10 @@
                             } else if (this.currentGame.funcPartsLower.includes(guessTextLower)) {
                                 thisGuess.tiles[i] = new Tile(guessTextLower, 1);
                                 this.currentGame.orangeWords.push(guessTextLower);
-                                this.guessSharingText += '🟧';
+                                thisGuessSharingText += '🟧';
                             } else {
                                 thisGuess.tiles[i] = new Tile(guessTextLower, 0);
-                                this.guessSharingText = '⬜️';
+                                thisGuessSharingText += '⬜️';
                             }
                             thisGuessedFunc += guessText + '_';
                         }
