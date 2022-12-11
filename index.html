@@ -309,13 +309,11 @@
         <template x-if="currentGame.finished" x-cloak>
             <div id="answer">
                 It was: <code x-text="currentGame.func"></code> (<a target="_blank" :href="'https://developer.wordpress.org/reference/functions/' + currentGame.func">View docs</a>)
-            </div>
-            <!--
-            <p>Share your result: </p>
-            <div id="sharing" x-html="currentGame.sharingTextItems.toString()">
+                <!-- <p>Share your result: </p>
+                <div id="sharing" x-html="generateSharingText()">
 
+                </div> -->
             </div>
-            -->
         </template>
     </main>
 
@@ -342,45 +340,6 @@
             }
         }
 
-        class SharingTextItem {
-            constructor(text, count) {
-                this.text = text;
-                this.count = count;
-            }
-        }
-
-        class SharingTextItems {
-            constructor() {
-                /** @type {SharingTextItem[]} */
-                this.items = [];
-            }
-
-            add(text) {
-                if (this.items.length === 0) {
-                    this.items.push(new SharingTextItem(text, 1));
-                    return;
-                }
-                if (this.last().text === text) {
-                    this.last().count++;
-                    return;
-                }
-                this.items.push(new SharingTextItem(text, 1));
-            }
-
-            last() {
-                return this.items[this.items.length - 1];
-            }
-
-            toString() {
-                return this.items.map(item => {
-                    if (item.count === 1) {
-                        return item.text;
-                    }
-                    return `${item.text} x ${item.count}`;
-                }).join('<br>');
-            }
-        }
-
         class GameData {
             constructor() {
                 this.func = '';
@@ -391,7 +350,6 @@
                 this.currentGuesses = [ 'wp', 'get','attachment','image' ];
                 this.correctWords = ['', '', '', ''];
                 this.finished = false;
-                this.sharingTextItems = new SharingTextItems();
             }
         }
 
@@ -522,7 +480,6 @@
 
                         let thisGuess = new Guess();
                         let thisGuessedFunc = '';
-                        let thisGuessSharingText = '';
 
                         for (let i = 0; i < 4; i++) {
                             elem = document.getElementById(`part${i}`);
@@ -538,25 +495,16 @@
                             if (guessTextLower === this.currentGame.funcPartsLower[i]) {
                                 thisGuess.tiles[i] = new Tile(guessTextLower, 2);
                                 this.currentGame.correctWords[i] = guessTextLower;
-                                thisGuessSharingText += '✅';
                             } else if (this.currentGame.funcPartsLower.includes(guessTextLower)) {
                                 thisGuess.tiles[i] = new Tile(guessTextLower, 1);
                                 this.currentGame.orangeWords.push(guessTextLower);
-                                thisGuessSharingText += '🟧';
                             } else {
                                 thisGuess.tiles[i] = new Tile(guessTextLower, 0);
-                                thisGuessSharingText += '⬜️';
                             }
                             thisGuessedFunc += guessText + '_';
                         }
                         thisGuess.func = thisGuessedFunc.substring(0, thisGuessedFunc.length-1);
                         this.currentGame.guesses.push(thisGuess);
-
-                        // Update the guess sharing text if it exists (when updating your game
-                        // just after I added this code, it could fail)
-                        if (this.currentGame.sharingTextItems) {
-                            this.currentGame.sharingTextItems.add(thisGuessSharingText);
-                        }
 
                         Alpine.nextTick(() => {
                             this.animateGuesses()
@@ -636,6 +584,53 @@
                     animateGuesses(guesses) {
                         document.querySelectorAll('.guess.new').forEach(elem => { console.log(elem); elem.classList.remove('new')});
                     },
+
+                    // Turns a tile number into text for sharing
+                    tileToText(tile) {
+                        if (tile.state === 2) {
+                            return '🟩';
+                        }
+                        if (tile.state === 1) {
+                            return '🟧';
+                        }
+                        return '⬜️';
+                    },
+
+                    // This can't be a method on the object because you can't store methods in localStorage using $persist
+                    guessToText(guess) {
+                        let guessText = '';
+                        for (let i = 0; i < 4; i++) {
+                            guessText += this.tileToText(guess.tiles[i]);
+                        }
+                        return guessText;
+                    },
+
+                    generateSharingText() {
+                        const guessTexts = this.currentGame.guesses.map(this.guessToText.bind(this));
+                        let outputTexts = [];
+                        let lastText = '';
+
+                        for (let i = 0; i < guessTexts.length; i++) {
+                            // Increment the count if the last guess was the same
+                            if (guessTexts[i] === lastText) {
+                                outputTexts[outputTexts.length-1].count++;
+                            } else {
+                                outputTexts.push({text: guessTexts[i], count: 1});
+                                lastText = guessTexts[i];
+                            }
+                        }
+
+                        let outputText = '';
+                        for (let i = 0; i < outputTexts.length; i++) {
+                            if (outputTexts[i].count > 1) {
+                                outputText += `${outputTexts[i].text} x ${outputTexts[i].count}`;
+                            } else {
+                                outputText += outputTexts[i].text;
+                            }
+                            outputText += '<br>';
+                        }
+                        return outputText;
+                    }
                 }
             });
         });
