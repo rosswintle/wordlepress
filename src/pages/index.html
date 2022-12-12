@@ -314,9 +314,9 @@
                 <code>_</code> <input x-model="currentGame.currentGuesses[3]" id="part3" type="text" name="part3" :key="part3"                               :class="{ 'green': inputIsGreen(3), orange: inputIsOrange(3), grey: inputIsGrey(3), red: inputIsRed(3)}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
             </form>
             <div id="buttons" class="button-group">
-                <button class="guessButton" x-bind:disabled="guessInvalid" @click.prevent="processGuess">Guess</button>
-                <button class="suggestButton" @click.prevent="suggestGuess">Suggest</button>
-                <button class="giveUpButton" @click.prevent="giveUp">Give Up</button>
+                <button class="guessButton" x-bind:disabled="guessInvalid || currentGame.finished" @click.prevent="processGuess">Guess</button>
+                <button class="suggestButton" x-bind:disabled="currentGame.finished" @click.prevent="suggestGuess">Suggest</button>
+                <button class="giveUpButton" x-bind:disabled="currentGame.finished" @click.prevent="giveUp">Give Up</button>
             </div>
             <div class="stats">
                 <div class="stat">Guesses: <span x-text="currentGame.guesses.length"></span></div>
@@ -326,11 +326,14 @@
             <template x-if="currentGame.finished" x-cloak>
                 <div id="answer">
                     It was: <code x-text="currentGame.func"></code> (<a target="_blank" :href="'https://developer.wordpress.org/reference/functions/' + currentGame.func">View docs</a>)
+                    <!-- <p>Share your result: </p>
+                    <div id="sharing" x-html="generateSharingText()">
+
+                    </div> -->
                 </div>
             </template>
 
             <!-- Completed modal -->
-
             <div
                 x-show="finishedModalOpen"
                 style="display: none"
@@ -375,7 +378,6 @@
                 </div>
             </div>
         </div>
-    </div>
     </main>
 
     <!-- Fathom - beautiful, simple website analytics -->
@@ -542,8 +544,8 @@
                             return;
                         }
 
-                        thisGuess = new Guess();
-                        thisGuessedFunc = '';
+                        let thisGuess = new Guess();
+                        let thisGuessedFunc = '';
 
                         for (let i = 0; i < 4; i++) {
                             elem = document.getElementById(`part${i}`);
@@ -649,6 +651,53 @@
                     animateGuesses(guesses) {
                         document.querySelectorAll('.guess.new').forEach(elem => { console.log(elem); elem.classList.remove('new')});
                     },
+
+                    // Turns a tile number into text for sharing
+                    tileToText(tile) {
+                        if (tile.state === 2) {
+                            return '🟩';
+                        }
+                        if (tile.state === 1) {
+                            return '🟧';
+                        }
+                        return '⬜️';
+                    },
+
+                    // This can't be a method on the object because you can't store methods in localStorage using $persist
+                    guessToText(guess) {
+                        let guessText = '';
+                        for (let i = 0; i < 4; i++) {
+                            guessText += this.tileToText(guess.tiles[i]);
+                        }
+                        return guessText;
+                    },
+
+                    generateSharingText() {
+                        const guessTexts = this.currentGame.guesses.map(this.guessToText.bind(this));
+                        let outputTexts = [];
+                        let lastText = '';
+
+                        for (let i = 0; i < guessTexts.length; i++) {
+                            // Increment the count if the last guess was the same
+                            if (guessTexts[i] === lastText) {
+                                outputTexts[outputTexts.length-1].count++;
+                            } else {
+                                outputTexts.push({text: guessTexts[i], count: 1});
+                                lastText = guessTexts[i];
+                            }
+                        }
+
+                        let outputText = '';
+                        for (let i = 0; i < outputTexts.length; i++) {
+                            if (outputTexts[i].count > 1) {
+                                outputText += `${outputTexts[i].text} x ${outputTexts[i].count}`;
+                            } else {
+                                outputText += outputTexts[i].text;
+                            }
+                            outputText += '<br>';
+                        }
+                        return outputText;
+                    }
                 }
             });
         });
