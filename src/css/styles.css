@@ -5,7 +5,7 @@
 @layer base {
     @font-face {
         font-family: "eb-garamond";
-        src: url("fonts/EB_Garamond/static/EBGaramond-Regular.ttf");
+        src: url("../fonts/EB_Garamond/static/EBGaramond-Regular.ttf");
     }
     :root {
         --wordpress-blue: #3858e9;
