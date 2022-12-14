@@ -1095,6 +1095,10 @@ input[type="text"].green {
   display: flex;
 }
 
+.hidden {
+  display: none;
+}
+
 .min-h-screen {
   min-height: 100vh;
 }
