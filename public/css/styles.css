@@ -596,7 +596,6 @@ select {
 
 :root {
   --wordpress-blue: #3858e9;
-  --max-body-width: 600px;
   --wordpress-grey: #23282D;
   --wordpress-gray: var(--wordpress-grey);
 }
@@ -650,7 +649,6 @@ main {
   display: flex;
   justify-content: center;
   padding: 0 20px 150px 20px;
-  max-width: var(--max-body-width);
   margin: 0 auto;
   font-size: 18px;
 }
@@ -1101,12 +1099,12 @@ input[type="text"].green {
   min-height: 100vh;
 }
 
-.w-auto {
-  width: auto;
-}
-
 .w-full {
   width: 100%;
+}
+
+.w-auto {
+  width: auto;
 }
 
 .max-w-2xl {

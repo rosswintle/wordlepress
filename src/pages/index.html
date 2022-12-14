@@ -15,11 +15,11 @@
             If you like this, I also made <a href="https://turbo-admin.com">a browser extension</a> you might like! Or you can <a href="https://ko-fi.com/magicroundabout">buy me a coffee</a>.
         </div>
     </header>
-    <main>
+    <main class="w-full max-w-2xl">
         <div x-data="game" id="app">
             <nav>
                 <ul>
-                    <li><a href="#">Settings</a></li>
+                    <!-- <li><a href="#">Settings</a></li> -->
                     <li><a href="https://rosswintle.uk/2022/11/wordlepress-a-game-for-wordpress-developers/">Help</a></li>
                 </ul>
             </nav>
@@ -62,7 +62,7 @@
                 <div class="stat">Words left to try: <span x-text="words.length - currentGame.guessedWords.length"></span></div>
             </div>
 
-            <template x-if="currentGame.finished || true" x-cloak>
+            <template x-if="currentGame.finished" x-cloak>
                 <div id="answer" class="answer mt-12 mx-auto text-center md:w-3/4 border-2 border-blue-500 px-8 py-6">
                     <p>It was:</p>
                     <p class="mt-1 text-lg"><code x-text="currentGame.func"></code></p>
