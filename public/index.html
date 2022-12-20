@@ -55,9 +55,29 @@
                 <input type="submit" hidden />
             </form>
             <div id="buttons" class="button-group">
-                <button class="guessButton" x-bind:disabled="guessInvalid || currentGame.finished" @click.prevent="processGuess">Guess</button>
-                <button class="suggestButton" x-bind:disabled="currentGame.finished" @click.prevent="suggestGuess">Suggest</button>
-                <button class="giveUpButton" x-bind:disabled="currentGame.finished" @click.prevent="giveUp">Give Up</button>
+                <button class="guessButton text-xl font-bold" x-bind:disabled="guessInvalid || currentGame.finished" @click.prevent="processGuess">
+                    <span class="block text-xs leading-none mb-1 font-normal">Check your</span>
+                    Guess
+                </button>
+            </div>
+            <div id="buttons" class="button-group mt-6">
+                <button class="suggestButton text-xl font-bold" x-bind:disabled="currentGame.finished" @click.prevent="suggestGuess">
+                    Suggest
+                    <span class="block text-xs leading-none mt-1 font-normal">a solution</span>
+                </button>
+                <button class="suggestButton text-xl font-bold" x-bind:disabled="currentGame.finished" @click.prevent="hintAtGuess">
+                    Hint
+                    <span class="block text-xs leading-none mt-1 font-normal">a word</span>
+                </button>
+                <button class="suggestButton text-xl font-bold" x-bind:disabled="currentGame.finished" @click.prevent="cheatAtGuess">
+                    Cheat
+                    <span class="block text-xs leading-none mt-1 font-normal">Show a word</span>
+                </button>
+            </div>
+            <div id="buttons" class="button-group mt-6">
+                <button class="giveUpButton text-xl font-bold" x-bind:disabled="currentGame.finished" @click.prevent="giveUp">
+                    <span class="block text-xs leading-none mb-1 font-normal">I'm stuck</span>
+                    Give Up</button>
             </div>
             <div class="stats">
                 <div class="stat">Guesses: <span x-text="currentGame.guesses.length"></span></div>
@@ -360,6 +380,33 @@
                         let remainingWords = words.filter(word => ! this.currentGame.guessedWords.includes(word));
 
                         return (remainingWords.length > 0) ? remainingWords[Math.floor(Math.random()*remainingWords.length)] : '';
+                    },
+
+                    hintAtGuess(withAsterisks = true) {
+                        const incorrectWordCount = this.currentGame.correctWords.filter(word => word === '').length;
+                        const randomIncorrectWordIndex = Math.floor(Math.random()*incorrectWordCount);
+
+                        let incorrectWordCountSoFar = 0;
+                        for (let i = 0; i < 4; i++) {
+                            if (this.currentGame.correctWords[i] !== '') {
+                                // Do nothing - input has a correct word in it
+                            } else {
+                                if (incorrectWordCountSoFar === randomIncorrectWordIndex) {
+                                    // Hint this word
+                                    let hintWord = this.currentGame.funcPartsLower[i];
+                                    if (withAsterisks) {
+                                        // Replace all characters except the first with asterisks
+                                        hintWord = hintWord[0] + '*'.repeat(hintWord.length-1);
+                                    }
+                                    this.currentGame.currentGuesses[i] = hintWord;
+                                }
+                                incorrectWordCountSoFar++;
+                            }
+                        }
+                    },
+
+                    cheatAtGuess() {
+                        this.hintAtGuess(false);
                     },
 
                     guessInvalid() {

@@ -116,6 +116,7 @@
         margin-right: 10px;
         background-color: var(--wordpress-blue);
         color: #FFF;
+        line-height: 1;
         box-shadow: none;
         border: 0 none;
         text-transform: uppercase;
