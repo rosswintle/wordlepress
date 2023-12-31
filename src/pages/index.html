@@ -247,7 +247,7 @@
                     init() {
                         // Sync the current game back to the correct persisted value.
                         // TODO: Is this doing anything?
-                        this.$watch(this.currentGame, value => {
+                        this.$watch('currentGame', value => {
                             console.log('Watcher triggered for: ', value);
                             if (this.mode === 'daily') {
                                 this.dailyGame = value;
